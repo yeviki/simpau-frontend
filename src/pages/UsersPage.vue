@@ -6,7 +6,7 @@
 
       <button
         @click="openAdd"
-        class="bg-blue-600 text-white px-4 py-2 rounded shadow"
+        class="rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
       >
         Tambah User
       </button>
@@ -17,78 +17,102 @@
       <input
         v-model="search"
         placeholder="Cari username/email..."
-        class="p-2 border rounded w-60"
+        class="block w-60 rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
       />
     </div>
 
     <!-- Table -->
-    <div class="overflow-hidden shadow rounded bg-white">
-      <table class="w-full">
-        <thead class="bg-gray-200 text-gray-700">
+    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
+      <table class="min-w-full divide-y divide-gray-300">
+        <thead class="bg-gray-50">
           <tr>
-            <th @click="sort('id')" class="p-3 cursor-pointer">
-              ID
-              <span v-if="sortBy === 'id'">
-                {{ sortDir === 'asc' ? '▲' : '▼' }}
-              </span>
+            <th
+              @click="sort('id')"
+              scope="col"
+              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 cursor-pointer sm:pl-6"
+            >
+              No
+              <span v-if="sortBy === 'id'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
             </th>
 
-            <th @click="sort('username')" class="p-3 cursor-pointer">
+            <th
+              @click="sort('username')"
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+            >
               Username
-              <span v-if="sortBy === 'username'">
-                {{ sortDir === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span v-if="sortBy === 'username'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
             </th>
 
-            <th @click="sort('email')" class="p-3 cursor-pointer">
+            <th
+              @click="sort('email')"
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+            >
               Email
-              <span v-if="sortBy === 'email'">
-                {{ sortDir === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span v-if="sortBy === 'email'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
             </th>
 
-            <th @click="sort('role')" class="p-3 cursor-pointer">
+            <th
+              @click="sort('role')"
+              scope="col"
+              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 cursor-pointer"
+            >
               Role
-              <span v-if="sortBy === 'role'">
-                {{ sortDir === 'asc' ? '▲' : '▼' }}
-              </span>
+              <span v-if="sortBy === 'role'">{{ sortDir === 'asc' ? '▲' : '▼' }}</span>
             </th>
 
-            <th class="p-3 text-center">Aksi</th>
+            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+              <span class="sr-only">Aksi</span>
+            </th>
           </tr>
         </thead>
 
-        <tbody>
+        <tbody class="divide-y divide-gray-200 bg-white">
           <tr
-            v-for="u in paginated"
+            v-for="(u, index) in paginated"
             :key="u.id"
             :class="[
-              'border-b transition',
+              'transition',
+              index % 2 === 0 ? 'bg-white' : 'bg-gray-50',
               u.id === highlightId ? 'bg-green-100' : ''
             ]"
           >
-            <td class="p-3">{{ u.id }}</td>
-            <td class="p-3">{{ u.username }}</td>
-            <td class="p-3">{{ u.email }}</td>
-            <td class="p-3">{{ u.role }}</td>
+            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+              {{ (page - 1) * perPage + (index + 1) }}
+            </td>
 
-            <td class="p-3 text-center space-x-3">
-              <button @click="openEdit(u)" class="px-2 py-1 rounded-lg text-white bg-blue-500 hover:bg-blue-600 
-                      shadow-sm transition active:scale-95">
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-700">
+              {{ u.username }}
+            </td>
+
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-700">
+              {{ u.email }}
+            </td>
+
+            <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-700">
+              {{ u.role }}
+            </td>
+
+            <td class="whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6 space-x-2">
+              <button
+                @click="openEdit(u)"
+                class="text-indigo-600 hover:text-indigo-900 font-semibold transition"
+              >
                 Edit
               </button>
 
               <button
                 @click="remove(u.id)"
-                class="px-2 py-1 rounded-lg text-white bg-red-500 hover:bg-red-600 
-                      shadow-sm transition active:scale-95">
+                class="text-red-600 hover:text-red-800 font-semibold transition"
+              >
                 Hapus
               </button>
             </td>
           </tr>
 
           <tr v-if="filtered.length === 0">
-            <td colspan="5" class="p-4 text-center text-gray-500">
+            <td colspan="5" class="px-6 py-4 text-center text-gray-500">
               Tidak ada data ditemukan.
             </td>
           </tr>
@@ -96,35 +120,86 @@
       </table>
     </div>
 
-    <!-- Pagination -->
-    <div class="flex justify-between items-center mt-4">
-      <div>
-        Menampilkan {{ paginated.length }} dari {{ filtered.length }} data.
+    <!-- Pagination Super Compact -->
+    <div class="flex justify-between items-center mt-6">
+
+      <!-- Info -->
+      <div class="text-xs text-gray-600 dark:text-gray-300">
+        {{ paginated.length }} / {{ filtered.length }} data
       </div>
 
-      <div class="flex items-center space-x-2">
+      <!-- Compact Pagination -->
+      <div class="flex items-center space-x-1">
+
+        <!-- FIRST -->
+        <button
+          @click="goFirst"
+          :disabled="page === 1"
+          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 
+                dark:hover:bg-slate-700 transition"
+        >
+          «
+        </button>
+
+        <!-- PREV -->
         <button
           @click="prevPage"
           :disabled="page === 1"
-          class="px-3 py-1 border rounded disabled:opacity-40"
+          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 
+                dark:hover:bg-slate-700 transition"
         >
-          Prev
+          ‹
         </button>
 
-        <span>Halaman {{ page }} / {{ totalPages }}</span>
+        <!-- Page Numbers -->
+        <template v-for="p in pagesToShow" :key="p">
 
+          <!-- Number -->
+          <button
+            v-if="p !== '...'"
+            @click="page = p"
+            :class="[
+              'px-3 py-1 rounded-full text-xs transition border',
+              page === p
+                ? 'bg-blue-600 text-white border-blue-600 shadow'
+                : 'bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700'
+            ]"
+          >
+            {{ p }}
+          </button>
+
+          <!-- Ellipsis -->
+          <span v-else class="px-2 text-gray-500 dark:text-gray-400 text-sm">…</span>
+        </template>
+
+        <!-- NEXT -->
         <button
           @click="nextPage"
           :disabled="page === totalPages"
-          class="px-3 py-1 border rounded disabled:opacity-40"
+          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 
+                dark:hover:bg-slate-700 transition"
         >
-          Next
+          ›
+        </button>
+
+        <!-- LAST -->
+        <button
+          @click="goLast"
+          :disabled="page === totalPages"
+          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 
+                dark:hover:bg-slate-700 transition"
+        >
+          »
         </button>
       </div>
     </div>
 
     <!-- Modal -->
-    <Modal v-if="showModal" @close="showModal = false">
+    <Modal v-if="showModal" @close="closeModal">
       <template #title>
         {{ isEdit ? "Edit User" : "Tambah User" }}
       </template>
@@ -135,10 +210,11 @@
           <input
             v-model="form.username"
             placeholder="Masukkan username"
-            class="w-full px-3 py-2 rounded-lg bg-white/20 text-white
-                  placeholder-white/60 border border-white/20 focus:border-blue-400
-                  focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
+            class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
           />
+          <p v-if="errors.username" class="text-red-500 text-xs mt-1">
+            {{ errors.username }}
+          </p>
         </div>
 
         <div>
@@ -146,29 +222,32 @@
           <input
             v-model="form.email"
             placeholder="Masukkan email"
-            class="w-full px-3 py-2 rounded-lg bg-white/20 text-white
-                  placeholder-white/60 border border-white/20 focus:border-blue-400
-                  focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
+            class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
           />
+          <p v-if="errors.email" class="text-red-500 text-xs mt-1">
+            {{ errors.email }}
+          </p>
         </div>
 
-        <div v-if="!isEdit">
+        <!-- <div v-if="!isEdit"> -->
+        <div>
           <label class="text-sm text-gray-200">Password</label>
           <input
             v-model="form.password"
-            placeholder="Password"
+            :placeholder="isEdit ? 'Kosongkan jika tidak ingin mengubah' : 'Password'"
             type="password"
-            class="w-full px-3 py-2 rounded-lg bg-white/20 text-white
-                  placeholder-white/60 border border-white/20 focus:border-blue-400
-                  focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
+            class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6"
           />
+          <p v-if="errors.password" class="text-red-500 text-xs mt-1">
+            {{ errors.password }}
+          </p>
         </div>
 
         <div>
           <label class="text-sm text-gray-200">Role</label>
           <select
             v-model="form.role"
-            class="w-full px-3 py-2 rounded-lg bg-white/20 text-white
+            class="w-full px-3 py-1 rounded-lg bg-white/20 text-white
                   border border-white/20 focus:border-blue-400
                   focus:outline-none focus:ring-2 focus:ring-blue-500/40 transition"
           >
@@ -198,11 +277,12 @@ import { ref, computed, onMounted } from "vue";
 import api from "../api/axios.js";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
-
+import { validate } from "../utils/validator";
 
 /* --------------------------------------------
  * STATE
  * -------------------------------------------- */
+const errors = ref({});
 const users = ref([]);
 
 /* search */
@@ -299,6 +379,22 @@ const prevPage = () => {
   if (page.value > 1) page.value--;
 };
 
+// Pagination First Page And Last Page
+const goFirst = () => (page.value = 1);
+const goLast = () => (page.value = totalPages.value);
+
+const pagesToShow = computed(() => {
+  const total = totalPages.value;
+  const current = page.value;
+
+  if (total <= 5) return [...Array(total)].map((_, i) => i + 1);
+
+  if (current <= 3) return [1, 2, 3, "...", total];
+  if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
+
+  return [1, "...", current - 1, current, current + 1, "...", total];
+});
+
 /* --------------------------------------------
  * MODAL OPEN
  * -------------------------------------------- */
@@ -320,26 +416,73 @@ const openEdit = (u) => {
   showModal.value = true;
 };
 
+// Reset Form 
+const closeModal = () => {
+  showModal.value = false;
+  resetForm();
+};
+
+const resetForm = () => {
+  form.value.username = "";
+  form.value.email = "";
+  form.value.password = "";
+  form.value.role = "adminlocal";
+
+  errors.value = {};
+};
+
+/* --------------------------------------------
+ * VALIDATE DATA
+ * -------------------------------------------- */
+const rulesValidate = computed(() => ({
+  username: ["required"],
+  email: ["required", "email"],
+  password: isEdit.value
+    ? ["min:6"]        // Edit → password opsional
+    : ["required", "min:6"], // Tambah → wajib
+  role: ["required"],
+}));
+
 /* --------------------------------------------
  * SAVE DATA
  * -------------------------------------------- */
 const save = async () => {
-  if (isEdit.value) {
-    await api.put(`/users/${form.value.id}`, form.value);
-  } else {
-    const res = await api.post("/users", form.value);
-    highlightId.value = res.data.id; // highlight created row
+  try {
+    errors.value = validate(form.value, rulesValidate.value);
+
+  if (Object.keys(errors.value).length > 0) return;
+
+    const payload = { ...form.value };
+
+    if (isEdit.value && (!payload.password || payload.password.trim() === "")) {
+      delete payload.password;
+    }
+
+    if (isEdit.value) {
+      await api.put(`/users/${form.value.id}`, payload);
+    } else {
+      await api.post("/users", payload);
+    }
+
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil",
+      text: isEdit.value ? "Berhasil ubah data" : "Data Berhasil ditambahkan",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+
+    showModal.value = false;
+    loadUsers();
+  } catch (err) {
+    Swal.fire({
+      icon: "error",
+      title: "Gagal",
+      text: err.response?.data?.message  || "Terjadi kesalahan",
+    });
   }
-
-  showModal.value = false;
-
-  await loadUsers();
-
-  // highlight edit
-  if (isEdit.value) highlightId.value = form.value.id;
-
-  setTimeout(() => (highlightId.value = null), 1200);
 };
+
 
 /* --------------------------------------------
  * DELETE
@@ -359,9 +502,9 @@ const remove = async (id) => {
       title: "text-xl font-semibold dark:text-white",
       htmlContainer: "text-gray-600 dark:text-gray-300",
       confirmButton:
-        "px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow",
+        "px-4 ml-1 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 shadow",
       cancelButton:
-        "px-4 py-2 rounded-lg bg-gray-200 dark:bg-slate-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600",
+        "px-4 ml-1 py-2 rounded-lg bg-gray-200 dark:bg-slate-700 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-slate-600",
     },
   });
 

@@ -1,45 +1,53 @@
 <template>
   <aside
     :class="[
-      'h-screen relative border-r dark:border-slate-700 transition-all duration-300 ease-in-out',
+      'h-screen relative bg-white dark:bg-slate-900 transition-all duration-300 ease-in-out shadow-sm shadow-gray-300/20 dark:shadow-black/20 border-r border-gray-200/50 dark:border-gray-700/50',
       collapsed ? 'w-20' : 'w-64'
     ]"
   >
-    <!-- Header -->
-    <div class="p-4 flex items-center justify-between">
-      <span class="font-bold text-xl" v-if="!collapsed">Admin Panel</span>
+    <!-- HEADER -->
+    <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200/50 dark:border-gray-700/50">
+      <div class="flex items-center space-x-2">
+        <img
+          v-if="!collapsed"
+          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+          class="h-8"
+        />
+        <span v-if="!collapsed" class="font-bold text-lg text-slate-900 dark:text-slate-100">
+          Admin Panel
+        </span>
+      </div>
 
       <button
-        class="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition-all"
+        class="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition"
         @click="$emit('toggleCollapse')"
       >
-        ☰
+        <Bars3Icon class="w-6 h-6 text-slate-700 dark:text-slate-200" />
       </button>
     </div>
 
-    <!-- Menu -->
-    <nav class="mt-4 space-y-1">
+    <!-- MENU -->
+    <nav class="mt-4 space-y-1 px-2">
       <div
         v-for="m in menu"
         :key="m.path"
         @click="go(m.path)"
         :class="[
-          'flex items-center px-4 py-2 cursor-pointer rounded-lg transition-all',
+          'flex items-center px-3 py-2 cursor-pointer rounded-lg transition-all',
           isActive(m.path)
-            ? 'bg-blue-600 text-white'
-            : 'hover:bg-slate-200 dark:hover:bg-slate-700'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
         ]"
       >
         <component :is="m.icon" class="w-5 h-5" />
-
         <transition name="fade">
-          <span class="ml-3" v-if="!collapsed">{{ m.label }}</span>
+          <span v-if="!collapsed" class="ml-3">{{ m.label }}</span>
         </transition>
       </div>
     </nav>
 
-    <!-- Toggle Theme -->
-    <div class="absolute bottom-5 left-0 right-0 flex justify-center">
+    <!-- TOGGLE THEME -->
+    <!-- <div class="absolute bottom-5 left-0 right-0 flex justify-center">
       <button
         @click="$emit('toggleTheme')"
         :class="[
@@ -49,7 +57,6 @@
             : 'px-4 py-2 bg-slate-300 dark:bg-slate-700'
         ]"
       >
-        <!-- ICON with rotation -->
         <transition name="rotate-fade" mode="out-in">
           <span :key="theme" class="text-xl">
             <span v-if="theme === 'light'">🌞</span>
@@ -57,19 +64,19 @@
           </span>
         </transition>
 
-        <!-- TEXT -->
         <transition name="fade">
-          <span v-if="!collapsed" class="ml-2">
-            {{ theme === 'light' ? "Light Mode" : "Dark Mode" }}
+          <span v-if="!collapsed" class="ml-2 text-slate-900 dark:text-slate-100">
+            {{ theme === 'light' ? 'Light Mode' : 'Dark Mode' }}
           </span>
         </transition>
       </button>
-    </div>
+    </div> -->
   </aside>
 </template>
 
 <script setup>
-import { useRouter, useRoute } from "vue-router";
+import { useRouter, useRoute } from 'vue-router';
+import { Bars3Icon } from '@heroicons/vue/24/outline';
 
 const props = defineProps({
   collapsed: Boolean,
@@ -87,27 +94,21 @@ const isActive = (p) => route.path.startsWith(p);
 <style scoped>
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity .2s ease;
+  transition: opacity 0.2s ease;
 }
-
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
 }
 
-.rotate-fade-enter-active {
-  transition: all .25s ease;
+.rotate-fade-enter-active,
+.rotate-fade-leave-active {
+  transition: all 0.25s ease;
 }
-
 .rotate-fade-enter-from {
   opacity: 0;
   transform: rotate(-90deg);
 }
-
-.rotate-fade-leave-active {
-  transition: all .25s ease;
-}
-
 .rotate-fade-leave-to {
   opacity: 0;
   transform: rotate(90deg);
