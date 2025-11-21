@@ -1,3 +1,5 @@
+<!-- layouts/DasboardLayout.vue -->
+
 <template>
   <div :class="['flex min-h-screen transition-colors duration-300', themeClass]">
     <Sidebar

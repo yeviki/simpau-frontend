@@ -1,3 +1,4 @@
+<!-- LoginPage.vue -->
 <template>
   <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 to-slate-700 p-4">
 
@@ -53,6 +54,16 @@
       </div>
     </div>
   </div>
+
+  <!-- LOADING OVERLAY -->
+  <div
+    v-if="loading"
+    class="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+  >
+    <div class="text-white text-xl font-semibold animate-pulse">
+      Loading...
+    </div>
+  </div>
 </template>
 
 <style scoped>
@@ -84,6 +95,8 @@ import api from "../api/axios.js";
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 
+const loading = ref(false);
+
 const email = ref("");
 const password = ref("");
 const error = ref("");
@@ -91,20 +104,35 @@ const error = ref("");
 const router = useRouter();
 
 const login = async () => {
+  loading.value = true;
+  error.value = "";
+
   try {
+    // 1. login
     const res = await api.post("/auth/login", {
       email: email.value,
       password: password.value
     });
 
-    localStorage.setItem("token", res.data.token);
+    const token = res.data.token;
+    localStorage.setItem("token", token);
 
-    // gunakan SPA navigation
+    // 2. get me
+    const me = await api.get("/auth/me", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    // 3. redirect setelah data user lengkap
     router.push("/dashboard");
 
   } catch (err) {
     error.value = "Email atau password salah!";
+  } finally {
+    loading.value = false;
   }
 };
+
 </script>
 

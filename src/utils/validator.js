@@ -1,3 +1,4 @@
+// utils/validator.js
 export function validate(data, rules) {
   const errors = {};
 
