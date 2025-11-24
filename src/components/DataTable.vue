@@ -1,4 +1,4 @@
-<!-- DataTable.vue -->
+<!-- components/DataTable.vue -->
 <template>
   <div>
 
@@ -93,8 +93,8 @@
     <div v-if="paginated.length" class="flex justify-between items-center mt-6">
       
       <!-- Info -->
-      <div class="text-xs text-gray-600 dark:text-gray-300">Showing
-        {{ paginated.length }} to {{ filtered.length }} data
+      <div class="text-xs text-gray-600 dark:text-gray-300">Menampilkan
+        {{ paginated.length }} dari {{ filtered.length }} data
       </div>
 
       <div class="flex items-center space-x-2">

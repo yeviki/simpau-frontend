@@ -147,11 +147,16 @@ const {
     password: "",
     role: "adminlocal",
   },
-  rules: {
+  rulesCreate: {
     username: ["required"],
-    email: ["required", "email"],
-    password: ["min:6"],
-    role: ["required"],
+    email: ["required"],
+    password: ["required", "min:6"],   // wajib saat tambah
+  },
+
+  rulesUpdate: {
+    username: ["required"],
+    email: ["required"],
+    password: [],                     // tidak wajib saat edit
   },
 
   transformForm: (f) => {

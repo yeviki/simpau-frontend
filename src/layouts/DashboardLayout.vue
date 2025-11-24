@@ -36,7 +36,7 @@ import { useRouter } from "vue-router";
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
 
-import { Users, LayoutDashboard } from "lucide-vue-next";
+import { Menu, Users, LayoutDashboard } from "lucide-vue-next";
 import { useAuthStore } from "../stores/auth";
 
 const auth = useAuthStore();
@@ -72,6 +72,7 @@ const userNavigation = [
 const menu = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Users", path: "/users", icon: Users },
+  { label: "Menu", path: "/menu", icon: Menu },
 ];
 
 /* ==========================

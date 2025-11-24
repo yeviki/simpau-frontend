@@ -4,6 +4,7 @@ import { useAuthStore } from "../stores/auth";
 import LoginPage from "../pages/LoginPage.vue";
 import DashboardLayout from "../layouts/DashboardLayout.vue";
 import UsersPage from "../pages/UsersPage.vue";
+import MenuPage from "../pages/MenuPage.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -21,6 +22,7 @@ const routes = [
     children: [
       { path: "dashboard", component: () => import("../pages/DashboardHome.vue") },
       { path: "users", component: UsersPage },
+      { path: "menu", component: MenuPage },
     ],
   },
 ];

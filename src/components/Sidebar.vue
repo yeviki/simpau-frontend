@@ -1,4 +1,4 @@
-<!-- components/sidebar.vue -->
+<!-- components/Sidebar.vue -->
 <template>
   <aside
     :class="[

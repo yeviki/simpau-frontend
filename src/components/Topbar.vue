@@ -1,3 +1,4 @@
+<!-- components/Topbar.vue -->
 <template>
   <header
     class="h-16 flex items-center justify-between px-6 transition-colors duration-300 border-b shadow-sm"

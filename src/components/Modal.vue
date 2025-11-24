@@ -1,3 +1,4 @@
+<!-- components/Modal.vue -->
 <template>
   <TransitionRoot as="template" :show="true">
     <Dialog class="relative z-50" @close="$emit('close')">

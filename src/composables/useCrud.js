@@ -3,33 +3,43 @@ import { ref, reactive } from "vue";
 import api from "../api/axios";
 import { validate } from "../utils/validator";
 
+/**
+ * Composable global CRUD untuk API endpoints
+ * options:
+ * - defaultForm: object default form
+ * - rules: validation rules umum
+ * - rulesCreate: validation khusus saat create
+ * - rulesUpdate: validation khusus saat edit
+ * - mapResponse: mapping response list
+ * - transformForm: transform form sebelum dikirim
+ * - beforeSave / afterSave: hooks
+ * - beforeDelete / afterDelete: hooks
+ * - idField: nama field id di form (default 'id')
+ */
 export function useCrud(endpoint, options = {}) {
-  // Default options
+  // --- Config ---
   const defaultForm = options.defaultForm || {};
   const mapResponse = options.mapResponse || ((res) => res);
   const transformForm = options.transformForm || ((form) => form);
+  const idField = options.idField || "id"; // nama field ID, bisa diubah tiap form
 
-  const rules = options.rules || {}; // <-- tambahkan rules custom
+  const rules = options.rules || {};
+  const rulesCreate = options.rulesCreate || {};
+  const rulesUpdate = options.rulesUpdate || {};
 
-  // Hooks
   const beforeSave = options.beforeSave || null;
   const afterSave = options.afterSave || null;
-
   const beforeDelete = options.beforeDelete || null;
   const afterDelete = options.afterDelete || null;
 
-  // State
-  const items = ref([]);
-  const loading = ref(false);
-  const form = reactive(structuredClone(defaultForm));
-  const errors = reactive({});
-  const isEdit = ref(false);
-  const showModal = ref(false);
-
-  // Query (search/filter)
-  const query = reactive({});
-
-  // Pagination
+  // --- State ---
+  const items = ref([]); // data list
+  const loading = ref(false); // loading state
+  const form = reactive(structuredClone(defaultForm)); // form reactive
+  const errors = reactive({}); // validation errors
+  const isEdit = ref(false); // apakah edit mode
+  const showModal = ref(false); // control modal
+  const query = reactive({}); // search/filter
   const pagination = reactive({
     page: 1,
     perPage: 10,
@@ -37,7 +47,7 @@ export function useCrud(endpoint, options = {}) {
     lastPage: 1,
   });
 
-  // ========== RESET FORM ==========
+  // --- Fungsi reset form ---
   const resetForm = () => {
     Object.keys(defaultForm).forEach((key) => {
       form[key] = defaultForm[key];
@@ -45,9 +55,7 @@ export function useCrud(endpoint, options = {}) {
     Object.keys(errors).forEach((k) => delete errors[k]);
   };
 
-  // =====================================
-  // HELPERS: AUTO DETECT RESPONSE FORMAT
-  // =====================================
+  // --- Extract list dari response API ---
   const extractList = (data) => {
     if (Array.isArray(data)) return data;
     if (Array.isArray(data.data)) return data.data;
@@ -56,26 +64,20 @@ export function useCrud(endpoint, options = {}) {
     return [];
   };
 
+  // --- Extract pagination dari response API ---
   const extractPagination = (data) => ({
     total: data.total || 0,
     lastPage: data.last_page || 1,
   });
 
-  // ========== LOAD LIST ==========
+  // --- Load data list dari API ---
   const load = async () => {
     loading.value = true;
     try {
       const { data } = await api.get(endpoint, {
-        params: {
-          page: pagination.page,
-          per_page: pagination.perPage,
-          ...query,
-        },
+        params: { page: pagination.page, per_page: pagination.perPage, ...query },
       });
-
-      const list = extractList(data);
-      items.value = mapResponse(list);
-
+      items.value = mapResponse(extractList(data));
       const pg = extractPagination(data);
       pagination.total = pg.total;
       pagination.lastPage = pg.lastPage;
@@ -84,7 +86,7 @@ export function useCrud(endpoint, options = {}) {
     }
   };
 
-  // ========== FETCH ONE ==========
+  // --- Fetch single record by ID ---
   const fetchOne = async (id, assignToForm = false) => {
     loading.value = true;
     try {
@@ -96,86 +98,90 @@ export function useCrud(endpoint, options = {}) {
     }
   };
 
-  // ========== OPEN ADD ==========
+  // --- Open modal untuk tambah data ---
   const openAdd = () => {
     resetForm();
     isEdit.value = false;
     showModal.value = true;
   };
 
-  // ========== OPEN EDIT ==========
+  // --- Open modal untuk edit data ---
   const openEdit = async (rowOrId) => {
     resetForm();
     isEdit.value = true;
-
     if (typeof rowOrId === "object") {
       Object.assign(form, rowOrId);
     } else {
       await fetchOne(rowOrId, true);
     }
-
     showModal.value = true;
   };
 
-  // ==================================
-  // SAVE (CREATE / UPDATE) + VALIDATOR
-  // ==================================
+  // --- Validasi unik di client-side (untuk title/url dll) ---
+  // Saat edit, sendiri diabaikan
+  const validateUnique = (key, value) => {
+    return !items.value.some(
+      (i) => i[key] === value && (!isEdit.value || i[idField] !== form[idField])
+    );
+  };
+
+  // --- Save data (create / update) ---
   const save = async () => {
     loading.value = true;
-
-    // reset error lama
     Object.keys(errors).forEach((k) => delete errors[k]);
 
     try {
-      // 1. Client-side validation
-      const validation = validate(form, rules);
+      // Tentukan rules sesuai mode
+      const activeRules = isEdit.value ? { ...rules, ...rulesUpdate } : { ...rules, ...rulesCreate };
+
+      // Validasi client-side
+      const validation = validate(form, activeRules);
+
+      // Cek unique di client-side jika ada 'unique' di rules
+      for (const key in activeRules) {
+        if (activeRules[key].includes("unique") && !validateUnique(key, form[key])) {
+          validation[key] = `${key} sudah digunakan`;
+        }
+      }
+
       if (Object.keys(validation).length > 0) {
         Object.assign(errors, validation);
         loading.value = false;
-        return false; // hentikan request
+        return false;
       }
 
-      // 2. beforeSave hook
       if (beforeSave) await beforeSave(form);
 
       const payload = transformForm(form);
-
       const method = isEdit.value ? "put" : "post";
-      const url = isEdit.value ? `${endpoint}/${form.id}` : endpoint;
+      const url = isEdit.value ? `${endpoint}/${form[idField]}` : endpoint;
 
-      // 3. Request ke server
       await api[method](url, payload);
 
-      // 4. Refresh Data
       await load();
       showModal.value = false;
       resetForm();
 
-      // 5. afterSave hook
       if (afterSave) afterSave();
-
       return true;
     } catch (e) {
-      // 6. Error dari backend → tampilkan ke errors
       if (e.response?.data?.errors) {
         Object.assign(errors, e.response.data.errors);
       } else if (e.response?.data?.message) {
         errors.general = e.response.data.message;
       }
-
       return false;
     } finally {
       loading.value = false;
     }
   };
 
-  // ========== DELETE ==========
+  // --- Delete data ---
   const remove = async (id) => {
     if (beforeDelete) {
       const ok = await beforeDelete(id);
       if (!ok) return;
     }
-
     loading.value = true;
     try {
       await api.delete(`${endpoint}/${id}`);
@@ -186,7 +192,7 @@ export function useCrud(endpoint, options = {}) {
     }
   };
 
-  // Pagination
+  // --- Ganti page pagination ---
   const changePage = (page) => {
     pagination.page = page;
     load();
@@ -201,7 +207,6 @@ export function useCrud(endpoint, options = {}) {
     showModal,
     pagination,
     query,
-
     load,
     fetchOne,
     openAdd,

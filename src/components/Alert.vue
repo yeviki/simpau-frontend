@@ -1,3 +1,4 @@
+<!-- components/Alert.vue -->
 <template>
   <div
     v-if="message"
