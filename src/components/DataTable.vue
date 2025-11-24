@@ -2,12 +2,23 @@
 <template>
   <div>
 
-    <!-- SEARCH -->
+    <!-- SEARCH + PERPAGE -->
     <div v-if="searchable" class="mb-4 flex justify-between items-center">
+      <!-- PERPAGE -->
+      <select
+        v-model.number="localPerPage"
+        class="block w-15 rounded-full border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700
+              focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20
+              dark:bg-slate-900 dark:text-gray-200 dark:border-gray-700"
+      >
+        <option v-for="n in [5,10,25,50,100]" :key="n" :value="n">{{ n }}</option>
+      </select>
+
+      <!-- SEARCH -->
       <input
         v-model="localSearch"
         placeholder="Cari data..."
-        class="block w-60 rounded-md bg-white px-3 py-1 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600 dark:bg-slate-800 dark:text-gray-200 dark:outline-gray-600"
+        class="block w-60 rounded-full bg-white px-3 py-1 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600 dark:bg-slate-800 dark:text-gray-200 dark:outline-gray-600"
       />
     </div>
 
@@ -55,7 +66,7 @@
               :key="col.key"
               class="whitespace-nowrap px-3 py-4 text-sm text-gray-700 dark:text-gray-300"
             >
-              <!-- Slot for actions -->
+              <!-- Slot untuk actions -->
               <slot
                 v-if="col.slot"
                 :name="col.slot"
@@ -82,17 +93,23 @@
     <div v-if="paginated.length" class="flex justify-between items-center mt-6">
       
       <!-- Info -->
-      <div class="text-xs text-gray-600 dark:text-gray-300">
-        {{ paginated.length }} / {{ filtered.length }} data
+      <div class="text-xs text-gray-600 dark:text-gray-300">Showing
+        {{ paginated.length }} to {{ filtered.length }} data
       </div>
 
-      <div class="flex items-center space-x-1">
+      <div class="flex items-center space-x-2">
 
         <!-- FIRST -->
         <button
           @click="goFirst"
           :disabled="page === 1"
-          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30 bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800
+                text-gray-700 dark:text-gray-200
+                shadow-sm border border-gray-200 dark:border-slate-700
+                hover:bg-blue-50 dark:hover:bg-slate-700
+                hover:shadow-md active:scale-95
+                transition-all"
         >
           «
         </button>
@@ -101,34 +118,49 @@
         <button
           @click="prevPage"
           :disabled="page === 1"
-          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30 bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800
+                text-gray-700 dark:text-gray-200
+                shadow-sm border border-gray-200 dark:border-slate-700
+                hover:bg-blue-50 dark:hover:bg-slate-700
+                hover:shadow-md active:scale-95
+                transition-all"
         >
           ‹
         </button>
 
-        <!-- Number -->
+        <!-- NUMBER -->
         <template v-for="p in pagesToShow" :key="p">
           <button
             v-if="p !== '...'"
             @click="updatePage(p)"
-            :class="[
-              'px-3 py-1 rounded-full text-xs border transition',
+            :class="[ 
+              'px-4 py-1.5 rounded-full text-xs transition-all border shadow-sm active:scale-95',
               p === page
-                ? 'bg-blue-600 text-white border-blue-600 shadow'
-                : 'bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700'
+                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 hover:shadow-md'
             ]"
           >
             {{ p }}
           </button>
 
-          <span v-else class="px-2 text-gray-500 dark:text-gray-400">…</span>
+          <span
+            v-else
+            class="px-2 text-gray-500 dark:text-gray-400 select-none"
+          >…</span>
         </template>
 
         <!-- NEXT -->
         <button
           @click="nextPage"
           :disabled="page === totalPages"
-          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30 bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800
+                text-gray-700 dark:text-gray-200
+                shadow-sm border border-gray-200 dark:border-slate-700
+                hover:bg-blue-50 dark:hover:bg-slate-700
+                hover:shadow-md active:scale-95
+                transition-all"
         >
           ›
         </button>
@@ -137,7 +169,13 @@
         <button
           @click="goLast"
           :disabled="page === totalPages"
-          class="px-2 py-1 rounded-full border text-xs disabled:opacity-30 bg-white dark:bg-slate-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-slate-700"
+          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
+                bg-white dark:bg-slate-800
+                text-gray-700 dark:text-gray-200
+                shadow-sm border border-gray-200 dark:border-slate-700
+                hover:bg-blue-50 dark:hover:bg-slate-700
+                hover:shadow-md active:scale-95
+                transition-all"
         >
           »
         </button>
@@ -158,7 +196,8 @@ const props = defineProps({
   searchable: Boolean,
   sortable: Boolean,
   paginated: Boolean,
-  perPage: { type: Number, default: 5 },
+
+  perPage: { type: Number, default: 5 },  // DEFAULT 5
 
   /* v-model */
   search: String,
@@ -173,14 +212,24 @@ const emit = defineEmits([
   "update:page",
   "update:sortBy",
   "update:sortDir",
+  "update:perPage",
 ]);
 
 /* LOCAL STATES */
 const localSearch = ref(props.search ?? "");
 const localPage = ref(props.page ?? 1);
 
+/* PER PAGE (PAKAI LOCAL, BUKAN props LANGSUNG) */
+const localPerPage = ref(props.perPage);
+
+/* SYNC TO PARENT */
 watch(localSearch, (v) => emit("update:search", v));
 watch(localPage, (v) => emit("update:page", v));
+
+watch(localPerPage, (v) => {
+  emit("update:perPage", v);
+  emit("update:page", 1); // reset page
+});
 
 /* COLUMNS */
 const dataColumns = computed(() => props.columns);
@@ -225,19 +274,21 @@ const sorted = computed(() => {
   });
 });
 
-/* PAGINATION */
+/* PAGINATION — FIXED TO USE localPerPage */
 const totalPages = computed(() =>
-  Math.ceil(sorted.value.length / props.perPage)
+  Math.ceil(sorted.value.length / localPerPage.value)
 );
 
 const paginated = computed(() => {
   if (!props.paginated) return sorted.value;
 
-  const start = (props.page - 1) * props.perPage;
-  return sorted.value.slice(start, start + props.perPage);
+  const start = (props.page - 1) * localPerPage.value;
+  return sorted.value.slice(start, start + localPerPage.value);
 });
 
-const startIndex = computed(() => (props.page - 1) * props.perPage);
+const startIndex = computed(() =>
+  (props.page - 1) * localPerPage.value
+);
 
 const nextPage = () => {
   if (props.page < totalPages.value) emit("update:page", props.page + 1);

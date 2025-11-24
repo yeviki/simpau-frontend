@@ -1,4 +1,4 @@
-<!-- UsersPage.vue -->
+<!-- pages/UsersPage.vue -->
 <template>
   <div>
     <!-- Header -->
@@ -20,18 +20,28 @@
       searchable
       sortable
       paginated
-      :per-page="5"
       v-model:search="query.search"
       v-model:page="pagination.page"
       :sort-by="sortBy"
       :sort-dir="sortDir"
       @update:sortBy="sortBy = $event"
       @update:sortDir="sortDir = $event"
+      v-model:perPage="perPage"
     >
       <template #actions="{ row }">
-        <button @click="openEdit(row)" class="rounded-sm bg-indigo-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">Edit</button>
+        <button 
+          @click="openEdit(row)" 
+          class="rounded-sm bg-indigo-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500"
+        >
+          Edit
+        </button>
         
-        <button @click="confirmDelete(row.id)" class="rounded-sm bg-red-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">Hapus</button>
+        <button 
+          @click="confirmDelete(row.id)" 
+          class="rounded-sm bg-red-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500"
+        >
+          Hapus
+        </button>
       </template>
     </DataTable>
 
@@ -113,82 +123,81 @@ import { ref, computed, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
-import { validate } from "../utils/validator";
 import { useCrud } from "../composables/useCrud";
 
 const {
-    items,
-    form,
-    errors,
-    showModal,
-    isEdit,
-    pagination,
-    query,
-    openAdd,
-    openEdit,
-    save,
-    remove,
-    load,
-    resetForm,
+  items,
+  form,
+  errors,
+  showModal,
+  isEdit,
+  pagination,
+  query,
+  openAdd,
+  openEdit,
+  save,
+  remove,
+  load,
+  resetForm,
 } = useCrud("/users", {
-    defaultForm: {
-      id: null,
-      username: "",
-      email: "",
-      password: "",
-      role: "adminlocal",
-    },
-    rules: {
-      username: ["required"],
-      email: ["required", "email"],
-      password: ["min:6"], // kalau kosong → tidak error, sesuai validator kamu
-      role: ["required"],
-    },
+  defaultForm: {
+    id: null,
+    username: "",
+    email: "",
+    password: "",
+    role: "adminlocal",
+  },
+  rules: {
+    username: ["required"],
+    email: ["required", "email"],
+    password: ["min:6"],
+    role: ["required"],
+  },
 
-    // 👇 Transform payload sebelum dikirim
-    transformForm: (f) => {
-      const payload = { ...f };
-      if (payload.password === "") delete payload.password;
-      return payload;
-    },
+  transformForm: (f) => {
+    const payload = { ...f };
+    if (payload.password === "") delete payload.password;
+    return payload;
+  },
 
-    // 👇 Setelah sukses create/update
-    afterSave: () => {
-      Swal.fire({
-        icon: "success",
-        title: "Berhasil!",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    },
+  afterSave: () => {
+    Swal.fire({
+      icon: "success",
+      title: "Berhasil!",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  },
 
-    // 👇 Hapus data
-    beforeDelete: async (id) => {
-      const result = await Swal.fire({
-        title: "Hapus User?",
-        text: "Data yang sudah dihapus tidak dapat dikembalikan.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Ya, Hapus",
-        cancelButtonText: "Batal",
-      });
+  beforeDelete: async (id) => {
+    const result = await Swal.fire({
+      title: "Hapus User?",
+      text: "Data yang sudah dihapus tidak dapat dikembalikan.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+    });
 
-      return result.isConfirmed;
-    },
+    return result.isConfirmed;
+  },
 
-    afterDelete: () => {
-      Swal.fire({
-        icon: "success",
-        title: "User berhasil dihapus",
-        timer: 1500,
-        showConfirmButton: false,
-      });
-    },
+  afterDelete: () => {
+    Swal.fire({
+      icon: "success",
+      title: "User berhasil dihapus",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  },
 });
 
-// DATATABLE SORT
+// SORT
 const sortBy = ref("id");
 const sortDir = ref("asc");
+
+// ADD perPage default = 5
+const perPage = ref(5);
 
 // Kolom tabel
 const columns = [

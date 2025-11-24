@@ -1,5 +1,5 @@
-// router/index.js
 import { createRouter, createWebHistory } from "vue-router";
+import { useAuthStore } from "../stores/auth";
 
 import LoginPage from "../pages/LoginPage.vue";
 import DashboardLayout from "../layouts/DashboardLayout.vue";
@@ -14,22 +14,15 @@ const routes = [
     meta: { guest: true },
   },
 
-  // Semua route yang memakai DashboardLayout masuk sini:
   {
     path: "/",
     component: DashboardLayout,
     meta: { requiresAuth: true },
     children: [
-      {
-        path: "dashboard",
-        component: () => import("../pages/DashboardHome.vue") // optional
-      },
-      {
-        path: "users",
-        component: UsersPage,
-      }
-    ]
-  }
+      { path: "dashboard", component: () => import("../pages/DashboardHome.vue") },
+      { path: "users", component: UsersPage },
+    ],
+  },
 ];
 
 const router = createRouter({
@@ -37,12 +30,20 @@ const router = createRouter({
   routes,
 });
 
-// Middleware
-router.beforeEach((to, from, next) => {
-  const token = localStorage.getItem("token");
+// MIDDLEWARE
+router.beforeEach(async (to, from, next) => {
+  const auth = useAuthStore();
 
-  if (to.meta.requiresAuth && !token) return next("/login");
-  if (to.meta.guest && token) return next("/dashboard");
+  // FIX: Pastikan axios punya token setelah refresh
+  await auth.loadToken();
+
+  if (to.meta.requiresAuth && !auth.isLoggedIn) {
+    return next("/login");
+  }
+
+  if (to.meta.guest && auth.isLoggedIn) {
+    return next("/dashboard");
+  }
 
   next();
 });

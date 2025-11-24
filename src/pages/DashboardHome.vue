@@ -34,7 +34,12 @@ const stats = ref({
 });
 
 onMounted(async () => {
-  const res = await api.get("/dashboard/stats");
-  stats.value = res.data;
+  try {
+    // kode kamu
+    const res = await api.get("/dashboard/stats");
+    stats.value = res.data;
+  } catch (err) {
+    console.error("Mounted error:", err);
+  }
 });
 </script>

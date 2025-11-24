@@ -1,3 +1,4 @@
+<!-- components/sidebar.vue -->
 <template>
   <aside
     :class="[
@@ -77,6 +78,8 @@
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
+import { useAuthStore } from "../stores/auth";
+const auth = useAuthStore();
 
 const props = defineProps({
   collapsed: Boolean,

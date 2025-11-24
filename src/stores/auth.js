@@ -1,25 +1,47 @@
+// stores/auth.js
 import { defineStore } from "pinia";
 import api from "../api/axios";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
-    token: localStorage.getItem("token"),
+    token: localStorage.getItem("token") || null,
   }),
+
+  getters: {
+    isLoggedIn: (state) => !!state.token,
+  },
 
   actions: {
     async login(payload) {
-      const res = await api.post("/auth/login", payload);
+      try {
+        const res = await api.post("/auth/login", payload);
 
-      this.token = res.data.token;
-      localStorage.setItem("token", this.token);
+        // Simpan token
+        this.token = res.data.token;
+        localStorage.setItem("token", this.token);
 
-      await this.fetchProfile();
+        // Ambil user fresh dari backend (WAJIB AGAR TOPBAR UPDATE)
+        await this.fetchProfile();
+
+      } catch (err) {
+        throw err;
+      }
     },
 
     async fetchProfile() {
       const res = await api.get("/auth/me");
-      this.user = res.data.user;
+      this.user = res.data; // pastikan backend kirim {name, email, avatar}
+    },
+
+    async loadToken() {
+      if (this.token && !this.user) {
+        try {
+          await this.fetchProfile();
+        } catch (e) {
+          this.logout();
+        }
+      }
     },
 
     logout() {
