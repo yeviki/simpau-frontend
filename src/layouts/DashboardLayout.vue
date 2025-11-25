@@ -1,6 +1,12 @@
 <!-- layouts/DashboardLayout.vue -->
 <template>
-  <div :class="['flex min-h-screen transition-colors duration-300', themeClass]">
+  <div
+    class="flex min-h-screen transition-colors duration-300"
+    :class="theme === 'dark'
+      ? 'bg-slate-900 text-gray-100'
+      : 'bg-gray-50 text-gray-800'"
+  >
+    <!-- SIDEBAR -->
     <Sidebar
       :collapsed="collapsed"
       :theme="theme"
@@ -9,42 +15,47 @@
       @toggleCollapse="toggleCollapse"
     />
 
-    <div class="flex-1 flex flex-col">
-      
-      <!-- Topbar memakai data user dari store -->
+    <!-- MAIN AREA -->
+    <div
+      class="flex-1 flex flex-col transition-colors duration-300"
+      :class="theme === 'dark'
+        ? 'bg-slate-900 text-gray-100'
+        : 'bg-white text-gray-800'"
+    >
+      <!-- TOPBAR -->
       <Topbar
         :theme="theme"
         :user="auth.user"
-        :avatar="auth.avatarUrl"
-        :email="auth.user?.email"
         :notificationsCount="notificationsCount"
         :userNavigation="userNavigation"
         @logout="logout"
       />
 
-
-      <main class="flex-1 p-6 transition-colors duration-300">
-        <router-view />
+      <!-- CONTENT -->
+      <main
+        class="flex-1 p-4 sm:p-6 lg:p-8 transition-colors duration-300"
+        :class="theme === 'dark'
+          ? 'bg-slate-900 text-gray-100'
+          : 'bg-gray-50 text-gray-800'"
+      >
+        <router-view :theme="theme" />
       </main>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRouter } from "vue-router";
+import { ref, watch } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
-
 import { Menu, Users, LayoutDashboard } from "lucide-vue-next";
 import { useAuthStore } from "../stores/auth";
+import { useRouter } from "vue-router";
 
 const auth = useAuthStore();
 const router = useRouter();
 
-/* ==========================
-   THEME & SIDEBAR
-========================== */
+/* THEME CONTROL */
 const theme = ref(localStorage.getItem("theme") || "dark");
 const collapsed = ref(false);
 
@@ -52,13 +63,25 @@ const toggleTheme = () => {
   theme.value = theme.value === "dark" ? "light" : "dark";
   localStorage.setItem("theme", theme.value);
 };
-const toggleCollapse = () => { 
-  collapsed.value = !collapsed.value; 
-};
 
-/* ==========================
-   USER NAVIGATION
-========================== */
+/* ADD OR REMOVE CLASS dark ON HTML */
+watch(
+  () => theme.value,
+  (val) => {
+    document.documentElement.classList.toggle("dark", val === "dark");
+  },
+  { immediate: true }
+);
+
+const toggleCollapse = () => (collapsed.value = !collapsed.value);
+
+/* STATIC MENU */
+const menu = [
+  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
+  { label: "Users", path: "/users", icon: Users },
+  { label: "Menu", path: "/menu", icon: Menu },
+];
+
 const notificationsCount = ref(3);
 
 const userNavigation = [
@@ -66,26 +89,5 @@ const userNavigation = [
   { name: "Settings", action: () => router.push("/settings") },
 ];
 
-/* ==========================
-   MENU
-========================== */
-const menu = [
-  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { label: "Users", path: "/users", icon: Users },
-  { label: "Menu", path: "/menu", icon: Menu },
-];
-
-/* ==========================
-   THEME CLASS
-========================== */
-const themeClass = computed(() =>
-  theme.value === "dark"
-    ? "bg-slate-900 text-gray-100"
-    : "bg-gray-50 text-gray-800"
-);
-
-/* ==========================
-   LOGOUT
-========================== */
 const logout = () => auth.logout();
 </script>

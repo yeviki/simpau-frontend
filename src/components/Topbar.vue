@@ -1,13 +1,28 @@
 <!-- components/Topbar.vue -->
 <template>
   <header
-    class="h-16 flex items-center justify-between px-6 transition-colors duration-300 border-b shadow-sm"
-    :class="themeClass"
+    :class="[
+      'h-16 flex items-center justify-between px-6 transition-colors duration-300 border-b shadow-sm backdrop-blur-sm',
+
+      theme === 'dark'
+        ? 'bg-slate-900 text-gray-100 border-gray-700/40'
+        : 'bg-white text-gray-800 border-gray-300/40'
+    ]"
   >
-    <!-- Left: Page Title -->
-    <h1 class="text-xl font-semibold text-gray-900 dark:text-white">
-      {{ title }} <p class="text-xs text-indigo-500">{{ user.role }}</p>
-    </h1>
+    <!-- Title Section -->
+    <div>
+      <h1
+        :class="[
+          'text-xl font-semibold flex flex-col leading-tight',
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        ]"
+      >
+        {{ title }}
+        <span class="text-[11px] text-indigo-500 mt-0.5">
+          {{ user.role }}
+        </span>
+      </h1>
+    </div>
 
     <!-- Right Section -->
     <div class="flex items-center space-x-4">
@@ -15,42 +30,56 @@
       <!-- Profile Dropdown -->
       <Menu as="div" class="relative">
         <MenuButton
-          class="flex items-center space-x-3 rounded hover:bg-gray-200 dark:hover:bg-gray-700 p-1"
+          :class="[
+            'flex items-center space-x-3 rounded-lg px-2 py-1 transition-colors cursor-pointer',
+            theme === 'dark'
+              ? 'hover:bg-gray-700/60'
+              : 'hover:bg-gray-200/60'
+          ]"
         >
-
-          <!-- Avatar -->
           <img
             :src="computedAvatar"
-            alt="avatar"
-            class="w-9 h-9 rounded-full border dark:border-gray-600"
+            class="w-9 h-9 rounded-full border"
+            :class="theme === 'dark' ? 'border-gray-600' : 'border-gray-300'"
           />
 
-          <!-- Name + Email -->
-          <div class="hidden md:flex flex-col text-left leading-tight">
-            <span class="text-sm font-medium text-gray-900 dark:text-white">
+          <div class="hidden md:flex flex-col leading-tight text-left">
+            <span
+              :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'"
+              class="text-sm font-medium"
+            >
               {{ user?.name }}
             </span>
-            <span class="text-xs text-gray-600 dark:text-gray-300">
+            <span
+              :class="theme === 'dark' ? 'text-gray-300' : 'text-gray-600'"
+              class="text-xs"
+            >
               {{ user?.email }}
             </span>
           </div>
 
-          <ChevronDownIcon class="w-5 h-5 text-gray-500 dark:text-gray-300" />
+          <ChevronDownIcon
+            class="w-5 h-5"
+            :class="theme === 'dark' ? 'text-gray-300' : 'text-gray-500'"
+          />
         </MenuButton>
 
         <!-- Dropdown -->
         <transition
-          enter-active-class="transition ease-out duration-100"
+          enter-active-class="transition ease-out duration-150"
           enter-from-class="transform opacity-0 scale-95"
-          enter-to-class="transform scale-100 opacity-100"
-          leave-active-class="transition ease-in duration-75"
-          leave-from-class="transform scale-100 opacity-100"
+          enter-to-class="transform opacity-100 scale-100"
+          leave-active-class="transition ease-in duration-100"
+          leave-from-class="transform opacity-100 scale-100"
           leave-to-class="transform opacity-0 scale-95"
         >
           <MenuItems
-            class="absolute right-0 mt-2 w-44 origin-top-right rounded-md 
-                   bg-white dark:bg-gray-800 py-2 shadow-lg ring-1 ring-black/10 
-                   focus:outline-none z-50"
+            :class="[
+              'absolute right-0 mt-2 w-48 rounded-md py-2 shadow-lg ring-1 ring-black/10 z-50',
+              theme === 'dark'
+                ? 'bg-slate-800 text-gray-200'
+                : 'bg-white text-gray-700'
+            ]"
           >
             <MenuItem
               v-for="item in userNavigation"
@@ -60,8 +89,12 @@
               <button
                 @click="item.action && item.action()"
                 :class="[
-                  active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                  'w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200'
+                  'w-full text-left px-4 py-2 text-sm',
+                  active
+                    ? theme === 'dark'
+                      ? 'bg-slate-700'
+                      : 'bg-gray-100'
+                    : ''
                 ]"
               >
                 {{ item.name }}
@@ -72,8 +105,13 @@
               <button
                 @click="$emit('logout')"
                 :class="[
-                  active ? 'bg-gray-100 dark:bg-gray-700' : '',
-                  'w-full text-left px-4 py-2 text-sm text-red-600 dark:text-red-400'
+                  'w-full text-left px-4 py-2 text-sm',
+                  'text-red-600 dark:text-red-400',
+                  active
+                    ? theme === 'dark'
+                      ? 'bg-slate-700'
+                      : 'bg-gray-100'
+                    : ''
                 ]"
               >
                 Logout
@@ -87,36 +125,26 @@
 </template>
 
 <script setup>
-import { ref, computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { computed } from "vue";
+import { useRoute } from "vue-router";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
 import { ChevronDownIcon } from "@heroicons/vue/24/outline";
 
-/* PROPS DARI LAYOUT */
 const props = defineProps({
-  user: { type: Object, default: () => ({}) },
-  notificationsCount: Number,
+  user: Object,
   userNavigation: Array,
-  theme: { type: String, default: "dark" },
+  theme: String,
 });
 
-/* DEFAULT AVATAR */
-const computedAvatar = computed(() => {
-  if (!props.user?.name) return "https://ui-avatars.com/api/?name=User";
-
-  return (
-    "https://ui-avatars.com/api/?background=4f46e5&color=fff&name=" +
-    encodeURIComponent(props.user.name)
-  );
-});
-
-const route = useRoute();
-
-const title = computed(() => route.meta.title || "Dashboard");
-
-const themeClass = computed(() =>
-  props.theme === "dark"
-    ? "bg-slate-900 text-gray-100 border-gray-700/30"
-    : "bg-white text-gray-800 border-gray-300/30"
+/* Avatar Fallback */
+const computedAvatar = computed(() =>
+  props.user?.name
+    ? "https://ui-avatars.com/api/?background=4f46e5&color=fff&name=" +
+      encodeURIComponent(props.user.name)
+    : "https://ui-avatars.com/api/?name="
 );
+
+/* Title from Router meta */
+const route = useRoute();
+const title = computed(() => route.meta.title || "Dashboard");
 </script>

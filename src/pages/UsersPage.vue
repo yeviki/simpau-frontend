@@ -15,6 +15,7 @@
 
     <!-- DATATABLE -->
     <DataTable
+      :theme="theme"
       :rows="items"
       :columns="columns"
       searchable
@@ -124,6 +125,10 @@ import DataTable from "../components/DataTable.vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
 import { useCrud } from "../composables/useCrud";
+
+const { theme } = defineProps({
+  theme: String
+});
 
 const {
   items,

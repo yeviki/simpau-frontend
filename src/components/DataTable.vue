@@ -4,12 +4,16 @@
 
     <!-- SEARCH + PERPAGE -->
     <div v-if="searchable" class="mb-4 flex justify-between items-center">
+
       <!-- PERPAGE -->
       <select
         v-model.number="localPerPage"
-        class="block w-15 rounded-full border border-gray-300 bg-white px-2 py-1 text-xs font-medium text-gray-700
-              focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20
-              dark:bg-slate-900 dark:text-gray-200 dark:border-gray-700"
+        :class="[
+          'block w-15 rounded-full px-2 py-1 text-xs font-medium transition-colors',
+          theme === 'dark'
+            ? 'bg-slate-900 text-gray-200 border border-gray-700'
+            : 'bg-white text-gray-700 border border-gray-300'
+        ]"
       >
         <option v-for="n in [5,10,25,50,100]" :key="n" :value="n">{{ n }}</option>
       </select>
@@ -17,32 +21,52 @@
       <!-- SEARCH -->
       <input
         v-model="localSearch"
-        placeholder="Cari data..."
-        class="block w-60 rounded-full bg-white px-3 py-1 text-base text-gray-900 outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline-2 focus:outline-indigo-600 dark:bg-slate-800 dark:text-gray-200 dark:outline-gray-600"
+        placeholder="Cari data…"
+        :class="[
+          'block w-60 rounded-full px-3 py-1 text-sm outline-1 -outline-offset-1 transition-colors',
+          theme === 'dark'
+            ? 'bg-slate-800 text-gray-100 placeholder-gray-400 outline-gray-700 focus:outline-indigo-600'
+            : 'bg-white text-gray-900 placeholder-gray-400 outline-gray-300 focus:outline-indigo-600'
+        ]"
       />
     </div>
 
-    <!-- TABLE -->
-    <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 md:rounded-lg">
-      <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-slate-800">
+    <!-- TABLE WRAPPER -->
+    <div
+      :class="[
+        'overflow-hidden shadow ring-1 ring-opacity-5 md:rounded-lg transition-colors',
+        theme === 'dark'
+          ? 'ring-gray-700 bg-slate-900'
+          : 'ring-black bg-white'
+      ]"
+    >
+      <table class="min-w-full divide-y"
+        :class="theme === 'dark' ? 'divide-gray-700' : 'divide-gray-300'"
+      >
+        <!-- HEADER -->
+        <thead
+          :class="[
+            'transition-colors',
+            theme === 'dark'
+              ? 'bg-slate-800 text-gray-100'
+              : 'bg-gray-50 text-gray-900'
+          ]"
+        >
           <tr>
-            <th 
-              scope="col" 
-              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">
+            <th
+              class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold sm:pl-6"
+            >
               No
             </th>
 
             <th
               v-for="col in dataColumns"
               :key="col.key"
-              scope="col"
               @click="col.key !== 'actions' && toggleSort(col.key)"
-              class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer select-none"
+              class="px-3 py-3.5 text-left text-sm font-semibold cursor-pointer select-none"
             >
               <span>{{ col.label }}</span>
 
-              <!-- Sort Icon -->
               <span v-if="col.key === sortBy">
                 {{ sortDir === 'asc' ? '▲' : '▼' }}
               </span>
@@ -50,38 +74,56 @@
           </tr>
         </thead>
 
-        <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-slate-900">
-          <tr 
-            v-for="(row, index) in paginated" 
+        <!-- BODY -->
+        <tbody
+          :class="[
+            'divide-y transition-colors',
+            theme === 'dark'
+              ? 'divide-gray-700 bg-slate-900'
+              : 'divide-gray-200 bg-white'
+          ]"
+        >
+          <tr
+            v-for="(row, index) in paginated"
             :key="row.id"
             class="transition"
           >
-            <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 sm:pl-6">
+            <!-- NO -->
+            <td
+              class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6"
+              :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'"
+            >
               {{ startIndex + index + 1 }}
             </td>
 
-            <!-- Dynamic Columns -->
+            <!-- DYNAMIC COLUMNS -->
             <td
               v-for="col in dataColumns"
               :key="col.key"
-              class="whitespace-nowrap px-3 py-4 text-sm text-gray-700 dark:text-gray-300"
+              class="whitespace-nowrap px-3 py-4 text-sm"
+              :class="theme === 'dark' ? 'text-gray-300' : 'text-gray-700'"
             >
-              <!-- Slot untuk actions -->
+              <!-- SLOT -->
               <slot
                 v-if="col.slot"
                 :name="col.slot"
                 :row="row"
               />
 
-              <!-- Normal field -->
+              <!-- NORMAL FIELD -->
               <span v-else>
                 {{ row[col.key] }}
               </span>
             </td>
           </tr>
 
+          <!-- NO DATA -->
           <tr v-if="filtered.length === 0">
-            <td :colspan="dataColumns.length + 1" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+            <td
+              :colspan="dataColumns.length + 1"
+              class="px-6 py-4 text-center"
+              :class="theme === 'dark' ? 'text-gray-400' : 'text-gray-500'"
+            >
               Tidak ada data ditemukan.
             </td>
           </tr>
@@ -91,96 +133,54 @@
 
     <!-- PAGINATION -->
     <div v-if="paginated.length" class="flex justify-between items-center mt-6">
-      
-      <!-- Info -->
-      <div class="text-xs text-gray-600 dark:text-gray-300">Menampilkan
-        {{ paginated.length }} dari {{ filtered.length }} data
+
+      <!-- INFO -->
+      <div
+        class="text-xs"
+        :class="theme === 'dark' ? 'text-gray-300' : 'text-gray-600'"
+      >
+        Menampilkan {{ paginated.length }} dari {{ filtered.length }} data
       </div>
 
       <div class="flex items-center space-x-2">
 
-        <!-- FIRST -->
-        <button
-          @click="goFirst"
-          :disabled="page === 1"
-          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
-                bg-white dark:bg-slate-800
-                text-gray-700 dark:text-gray-200
-                shadow-sm border border-gray-200 dark:border-slate-700
-                hover:bg-blue-50 dark:hover:bg-slate-700
-                hover:shadow-md active:scale-95
-                transition-all"
-        >
-          «
-        </button>
+        <!-- BUTTON TEMPLATE -->
+        <template v-for="btn in paginationButtons" :key="btn.label + '-' + Math.random()">
 
-        <!-- PREV -->
-        <button
-          @click="prevPage"
-          :disabled="page === 1"
-          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
-                bg-white dark:bg-slate-800
-                text-gray-700 dark:text-gray-200
-                shadow-sm border border-gray-200 dark:border-slate-700
-                hover:bg-blue-50 dark:hover:bg-slate-700
-                hover:shadow-md active:scale-95
-                transition-all"
-        >
-          ‹
-        </button>
-
-        <!-- NUMBER -->
-        <template v-for="p in pagesToShow" :key="p">
+          <!-- NORMAL BUTTON -->
           <button
-            v-if="p !== '...'"
-            @click="updatePage(p)"
-            :class="[ 
-              'px-4 py-1.5 rounded-full text-xs transition-all border shadow-sm active:scale-95',
-              p === page
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md'
-                : 'bg-white dark:bg-slate-800 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-slate-700 hover:bg-blue-50 dark:hover:bg-slate-700 hover:shadow-md'
+            v-if="btn.type === 'button'"
+            @click="btn.action && btn.action()"
+            :disabled="btn.disabled"
+            :class="[
+              'px-3 py-1.5 rounded-full text-xs transition-all border shadow-sm active:scale-95',
+              btn.disabled
+                ? 'opacity-30 cursor-not-allowed'
+                : '',
+              theme === 'dark'
+                ? btn.active
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                  : 'bg-slate-800 text-gray-200 border-slate-700 hover:bg-slate-700 hover:shadow-md'
+                : btn.active
+                  ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                  : 'bg-white text-gray-700 border-gray-200 hover:bg-blue-50 hover:shadow-md'
             ]"
           >
-            {{ p }}
+            {{ btn.label }}
           </button>
 
+          <!-- DOTS -->
           <span
-            v-else
-            class="px-2 text-gray-500 dark:text-gray-400 select-none"
-          >…</span>
+            v-if="btn.type === 'dots'"
+            :class="theme === 'dark' ? 'text-gray-400' : 'text-gray-500'"
+            class="px-2 select-none"
+          >
+            …
+          </span>
+
         </template>
-
-        <!-- NEXT -->
-        <button
-          @click="nextPage"
-          :disabled="page === totalPages"
-          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
-                bg-white dark:bg-slate-800
-                text-gray-700 dark:text-gray-200
-                shadow-sm border border-gray-200 dark:border-slate-700
-                hover:bg-blue-50 dark:hover:bg-slate-700
-                hover:shadow-md active:scale-95
-                transition-all"
-        >
-          ›
-        </button>
-
-        <!-- LAST -->
-        <button
-          @click="goLast"
-          :disabled="page === totalPages"
-          class="px-3 py-1.5 rounded-full text-xs disabled:opacity-30
-                bg-white dark:bg-slate-800
-                text-gray-700 dark:text-gray-200
-                shadow-sm border border-gray-200 dark:border-slate-700
-                hover:bg-blue-50 dark:hover:bg-slate-700
-                hover:shadow-md active:scale-95
-                transition-all"
-        >
-          »
-        </button>
-
       </div>
+
     </div>
 
   </div>
@@ -191,19 +191,19 @@ import { ref, computed, watch } from "vue";
 
 /* PROPS */
 const props = defineProps({
-  rows: { type: Array, required: true },
-  columns: { type: Array, required: true },
+  rows: Array,
+  columns: Array,
   searchable: Boolean,
   sortable: Boolean,
   paginated: Boolean,
-
-  perPage: { type: Number, default: 5 },  // DEFAULT 5
-
-  /* v-model */
+  perPage: { type: Number, default: 5 },
   search: String,
   page: Number,
   sortBy: String,
   sortDir: String,
+
+  /* THEME */
+  theme: String
 });
 
 /* EMIT */
@@ -218,28 +218,26 @@ const emit = defineEmits([
 /* LOCAL STATES */
 const localSearch = ref(props.search ?? "");
 const localPage = ref(props.page ?? 1);
-
-/* PER PAGE (PAKAI LOCAL, BUKAN props LANGSUNG) */
 const localPerPage = ref(props.perPage);
 
-/* SYNC TO PARENT */
+/* SYNC PARENT */
 watch(localSearch, (v) => emit("update:search", v));
 watch(localPage, (v) => emit("update:page", v));
-
 watch(localPerPage, (v) => {
   emit("update:perPage", v);
-  emit("update:page", 1); // reset page
+  emit("update:page", 1);
 });
 
 /* COLUMNS */
 const dataColumns = computed(() => props.columns);
 
-/* SEARCH */
+/* FILTER SEARCH */
 const filtered = computed(() => {
   if (!localSearch.value) return props.rows;
-
   return props.rows.filter((item) =>
-    JSON.stringify(item).toLowerCase().includes(localSearch.value.toLowerCase())
+    JSON.stringify(item)
+      .toLowerCase()
+      .includes(localSearch.value.toLowerCase())
   );
 });
 
@@ -274,7 +272,7 @@ const sorted = computed(() => {
   });
 });
 
-/* PAGINATION — FIXED TO USE localPerPage */
+/* PAGINATION */
 const totalPages = computed(() =>
   Math.ceil(sorted.value.length / localPerPage.value)
 );
@@ -286,33 +284,74 @@ const paginated = computed(() => {
   return sorted.value.slice(start, start + localPerPage.value);
 });
 
-const startIndex = computed(() =>
-  (props.page - 1) * localPerPage.value
+const startIndex = computed(
+  () => (props.page - 1) * localPerPage.value
 );
 
-const nextPage = () => {
-  if (props.page < totalPages.value) emit("update:page", props.page + 1);
-};
+/* BUTTON LOGIC — CLEAN */
+const paginationButtons = computed(() => {
+  const buttons = [];
 
-const prevPage = () => {
-  if (props.page > 1) emit("update:page", props.page - 1);
-};
+  // First
+  buttons.push({
+    type: "button",
+    label: "«",
+    action: () => emit("update:page", 1),
+    disabled: props.page === 1,
+  });
 
-const goFirst = () => emit("update:page", 1);
-const goLast = () => emit("update:page", totalPages.value);
+  // Prev
+  buttons.push({
+    type: "button",
+    label: "‹",
+    action: () => emit("update:page", props.page - 1),
+    disabled: props.page === 1,
+  });
 
-const updatePage = (p) => emit("update:page", p);
-
-/* PAGES TO SHOW */
-const pagesToShow = computed(() => {
+  // Pages
   const total = totalPages.value;
   const current = props.page;
 
-  if (total <= 5) return [...Array(total)].map((_, i) => i + 1);
+  const temp = [];
+  if (total <= 5) {
+    for (let i = 1; i <= total; i++) temp.push(i);
+  } else if (current <= 3) {
+    temp.push(1, 2, 3, "...", total);
+  } else if (current >= total - 2) {
+    temp.push(1, "...", total - 2, total - 1, total);
+  } else {
+    temp.push(1, "...", current - 1, current, current + 1, "...", total);
+  }
 
-  if (current <= 3) return [1, 2, 3, "...", total];
-  if (current >= total - 2) return [1, "...", total - 2, total - 1, total];
+  temp.forEach((p) => {
+    if (p === "...") {
+      buttons.push({ type: "dots" });
+    } else {
+      buttons.push({
+        type: "button",
+        label: p,
+        active: p === props.page,
+        action: () => emit("update:page", p),
+      });
+    }
+  });
 
-  return [1, "...", current - 1, current, current + 1, "...", total];
+  // Next
+  buttons.push({
+    type: "button",
+    label: "›",
+    action: () => emit("update:page", props.page + 1),
+    disabled: props.page === total,
+  });
+
+  // Last
+  buttons.push({
+    type: "button",
+    label: "»",
+    action: () => emit("update:page", total),
+    disabled: props.page === total,
+  });
+
+  return buttons;
 });
 </script>

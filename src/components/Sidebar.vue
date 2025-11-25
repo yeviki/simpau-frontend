@@ -2,28 +2,54 @@
 <template>
   <aside
     :class="[
-      'h-screen relative bg-white dark:bg-slate-900 transition-all duration-300 ease-in-out shadow-sm shadow-gray-300/20 dark:shadow-black/20 border-r border-gray-200/50 dark:border-gray-700/50',
-      collapsed ? 'w-20' : 'w-64'
+      'h-screen relative overflow-y-auto transition-all duration-300 ease-in-out select-none',
+      collapsed ? 'w-20' : 'w-64',
+      
+      /* background */
+      theme === 'dark'
+        ? 'bg-slate-900 border-gray-700/50'
+        : 'bg-white border-gray-200/60',
+
+      'shadow-sm border-r'
     ]"
   >
     <!-- HEADER -->
-    <div class="flex items-center justify-between h-16 px-4 border-b border-gray-200/50 dark:border-gray-700/50">
+    <div
+      :class="[
+        'flex items-center justify-between h-16 px-4 border-b backdrop-blur-sm',
+        theme === 'dark'
+          ? 'bg-slate-900/80 border-gray-700/50'
+          : 'bg-white/80 border-gray-200/60'
+      ]"
+    >
       <div class="flex items-center space-x-2">
         <img
           v-if="!collapsed"
           src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
           class="h-8"
         />
-        <span v-if="!collapsed" class="font-bold text-lg text-slate-900 dark:text-slate-100">
+
+        <span
+          v-if="!collapsed"
+          :class="[
+            'font-semibold text-lg',
+            theme === 'dark' ? 'text-gray-100' : 'text-gray-800'
+          ]"
+        >
           Admin Panel
         </span>
       </div>
 
       <button
-        class="p-2 rounded hover:bg-slate-200 dark:hover:bg-slate-700 transition"
         @click="$emit('toggleCollapse')"
+        :class="[
+          'p-2 rounded-lg transition',
+          theme === 'dark'
+            ? 'hover:bg-slate-700/60 text-gray-200'
+            : 'hover:bg-gray-200/80 text-gray-700'
+        ]"
       >
-        <Bars3Icon class="w-6 h-6 text-slate-700 dark:text-slate-200" />
+        <Bars3Icon class="w-6 h-6" />
       </button>
     </div>
 
@@ -35,27 +61,44 @@
         @click="go(m.path)"
         :class="[
           'flex items-center px-3 py-2 cursor-pointer rounded-lg transition-all',
+          
           isActive(m.path)
-            ? 'bg-indigo-600 text-white shadow-sm'
-            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+            ? 'bg-indigo-600 text-white shadow-sm shadow-indigo-600/30'
+            : theme === 'dark'
+              ? 'text-gray-300 hover:bg-slate-700/70'
+              : 'text-gray-700 hover:bg-gray-200/70'
         ]"
       >
-        <component :is="m.icon" class="w-5 h-5" />
+        <component
+          :is="m.icon"
+          :class="[
+            'w-5 h-5 transition-colors',
+            isActive(m.path)
+              ? 'text-white'
+              : theme === 'dark'
+                  ? 'text-gray-300'
+                  : 'text-gray-700'
+          ]"
+        />
+
         <transition name="fade">
-          <span v-if="!collapsed" class="ml-3">{{ m.label }}</span>
+          <span v-if="!collapsed" class="ml-3 text-sm font-medium">
+            {{ m.label }}
+          </span>
         </transition>
       </div>
     </nav>
 
     <!-- TOGGLE THEME -->
-    <!-- <div class="absolute bottom-5 left-0 right-0 flex justify-center">
+    <div class="absolute bottom-5 left-0 right-0 flex justify-center">
       <button
         @click="$emit('toggleTheme')"
         :class="[
-          'flex items-center justify-center rounded transition-all duration-300',
-          collapsed
-            ? 'w-10 h-10 bg-slate-300 dark:bg-slate-700'
-            : 'px-4 py-2 bg-slate-300 dark:bg-slate-700'
+          'flex items-center justify-center rounded-lg transition-all duration-300 shadow-sm',
+          theme === 'dark'
+            ? 'text-gray-100 bg-slate-700'
+            : 'text-gray-900 bg-gray-200',
+          collapsed ? 'w-11 h-11' : 'px-4 py-2'
         ]"
       >
         <transition name="rotate-fade" mode="out-in">
@@ -66,20 +109,22 @@
         </transition>
 
         <transition name="fade">
-          <span v-if="!collapsed" class="ml-2 text-slate-900 dark:text-slate-100">
+          <span
+            v-if="!collapsed"
+            class="ml-2 text-sm"
+            :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'"
+          >
             {{ theme === 'light' ? 'Light Mode' : 'Dark Mode' }}
           </span>
         </transition>
       </button>
-    </div> -->
+    </div>
   </aside>
 </template>
 
 <script setup>
 import { useRouter, useRoute } from 'vue-router';
 import { Bars3Icon } from '@heroicons/vue/24/outline';
-import { useAuthStore } from "../stores/auth";
-const auth = useAuthStore();
 
 const props = defineProps({
   collapsed: Boolean,
