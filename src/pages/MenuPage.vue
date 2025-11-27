@@ -1,13 +1,16 @@
 <template>
-  <div class="text-gray-900 dark:text-gray-100">
+  <div class="transition-colors duration-300"
+    :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">
 
     <!-- Header -->
     <div class="flex justify-between mb-4 items-center">
-      <h1 class="text-3xl font-bold">Menu</h1>
+      <h1 class="text-3xl font-bold transition-colors"
+        :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Menu</h1>
 
       <button
         @click="openAddMenu()"
-        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500"
+        class="rounded-md px-4 py-2 text-sm font-semibold text-white shadow-xs"
+        :class="theme === 'dark' ? 'bg-indigo-700 hover:bg-indigo-600' : 'bg-indigo-600 hover:bg-indigo-500'"
       >
         Tambah Menu
       </button>
@@ -18,12 +21,18 @@
       <input
         v-model="query.search"
         placeholder="Cari..."
-        class="block rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base text-gray-900 border border-gray-300 dark:border-gray-700"
+        class="block rounded-full px-3 py-1 text-sm border transition-colors duration-300"
+        :class="theme === 'dark'
+          ? 'bg-gray-800 text-gray-200 border-gray-700'
+          : 'bg-white text-gray-900 border-gray-300'"
       />
 
       <select
         v-model="sortBy"
-        class="rounded-md px-2 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200"
+        class="rounded-full px-2 py-1 border transition-colors duration-300"
+        :class="theme === 'dark'
+          ? 'bg-gray-800 text-gray-200 border-gray-700'
+          : 'bg-white text-gray-900 border-gray-300'"
       >
         <option value="id_menu">ID</option>
         <option value="title_menu">Title</option>
@@ -32,7 +41,10 @@
 
       <select
         v-model="sortDir"
-        class="rounded-md px-2 py-1 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200"
+        class="rounded-full px-2 py-1 border transition-colors"
+        :class="theme === 'dark'
+          ? 'bg-gray-800 text-gray-200 border-gray-700'
+          : 'bg-white text-gray-900 border-gray-300'"
       >
         <option value="asc">Asc</option>
         <option value="desc">Desc</option>
@@ -40,7 +52,10 @@
 
       <select
         v-model.number="perPage"
-        class="rounded-md px-2 py-1 border ml-auto border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 dark:text-gray-200"
+        class="rounded-full px-2 py-1 border ml-auto text-xs font-medium transition-colors"
+        :class="theme === 'dark'
+          ? 'bg-gray-800 text-gray-200 border-gray-700'
+          : 'bg-white text-gray-900 border-gray-300'"
       >
         <option :value="5">5</option>
         <option :value="10">10</option>
@@ -49,9 +64,15 @@
     </div>
 
     <!-- NESTED TABLE -->
-    <div class="overflow-x-auto bg-white dark:bg-gray-900 rounded-md shadow-sm border border-gray-200 dark:border-gray-700">
-      <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-        <thead class="bg-gray-50 dark:bg-gray-800">
+    <div class="overflow-x-auto rounded-md shadow-sm text-sm border transition-colors duration-300"
+      :class="theme === 'dark'
+        ? 'bg-gray-900 border-gray-700'
+        : 'bg-white border-gray-200'"
+    >
+      <table class="min-w-full divide-y transition-colors"
+        :class="theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'"
+      >
+        <thead :class="theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'">
           <tr>
             <th class="px-4 py-2 text-left">#</th>
             <th class="px-4 py-2 text-left">Title Menu</th>
@@ -63,11 +84,15 @@
           </tr>
         </thead>
 
-        <tbody class="bg-white dark:bg-gray-900 divide-y divide-gray-100 dark:divide-gray-700">
+        <tbody class="transition-colors"
+          :class="theme === 'dark'
+            ? 'bg-gray-900 divide-gray-700'
+            : 'bg-white divide-gray-100'"
+        >
           <template v-for="(parent, idx) in paginatedParents" :key="parent.id_menu">
 
             <!-- parent row -->
-            <tr class="bg-gray-100 dark:bg-gray-800">
+            <tr :class="theme === 'dark' ? 'bg-gray-900' : 'bg-white'">
               <td class="px-4 py-2">{{ parentIndex(idx) }}</td>
               <td class="px-4 py-2 font-semibold">{{ parent.title_menu }}</td>
               <td class="px-4 py-2">{{ parent.url_menu }}</td>
@@ -76,15 +101,27 @@
               <td class="px-4 py-2">—</td>
               <td class="px-4 py-2">
                 <button @click="openEdit(parent)"
-                  class="rounded-sm bg-indigo-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500">
+                  class="rounded-sm px-2 py-1 text-xs font-semibold text-white ml-2"
+                  :class="theme === 'dark'
+                    ? 'bg-indigo-700 hover:bg-indigo-600'
+                    : 'bg-indigo-600 hover:bg-indigo-500'"
+                >
                   Edit
                 </button>
                 <button @click="openAddSub(parent)"
-                  class="rounded-sm bg-green-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-green-500">
+                  class="rounded-sm px-2 py-1 text-xs font-semibold text-white ml-2"
+                  :class="theme === 'dark'
+                    ? 'bg-green-700 hover:bg-green-600'
+                    : 'bg-green-600 hover:bg-green-500'"
+                >
                   Tambah Sub
                 </button>
                 <button @click="confirmDelete(parent.id_menu)"
-                  class="rounded-sm bg-red-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500">
+                  class="rounded-sm px-2 py-1 text-xs font-semibold text-white ml-2"
+                  :class="theme === 'dark'
+                    ? 'bg-red-700 hover:bg-red-600'
+                    : 'bg-red-600 hover:bg-red-500'"
+                >
                   Hapus
                 </button>
               </td>
@@ -94,7 +131,7 @@
             <tr
               v-for="child in childrenOf(parent.id_menu)"
               :key="child.id_menu"
-              class="bg-white dark:bg-gray-900"
+              :class="theme === 'dark' ? 'bg-gray-900' : 'bg-white'"
             >
               <td class="px-4 py-2"></td>
               <td class="px-4 py-2 pl-8">↳ {{ child.title_menu }}</td>
@@ -104,15 +141,25 @@
               <td class="px-4 py-2">{{ parent.title_menu }}</td>
               <td class="px-4 py-2">
                 <button @click="openEdit(child)"
-                  class="rounded-sm bg-indigo-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500">
+                  class="rounded-sm px-2 py-1 text-xs font-semibold text-white ml-2"
+                  :class="theme === 'dark'
+                    ? 'bg-indigo-700 hover:bg-indigo-600'
+                    : 'bg-indigo-600 hover:bg-indigo-500'"
+                >
                   Edit
                 </button>
                 <button @click="openAddSub(child)"
-                  class="rounded-sm bg-green-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-green-500">
+                  class="rounded-sm px-2 py-1 text-xs font-semibold text-white ml-2"
+                  :class="theme === 'dark'
+                    ? 'bg-green-700 hover:bg-green-600'
+                    : 'bg-green-600 hover:bg-green-500'">
                   Tambah Sub
                 </button>
                 <button @click="confirmDelete(child.id_menu)"
-                  class="rounded-sm bg-red-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500">
+                  class="rounded-sm px-2 py-1 text-xs font-semibold text-white ml-2"
+                  :class="theme === 'dark'
+                    ? 'bg-red-700 hover:bg-red-600'
+                    : 'bg-red-600 hover:bg-red-500'">
                   Hapus
                 </button>
               </td>
@@ -131,7 +178,7 @@
 
     <!-- PAGINATION -->
     <div class="flex justify-between items-center mt-3">
-      <div class="text-sm text-gray-600 dark:text-gray-300">
+      <div :class="theme === 'dark' ? 'text-gray-300' : 'text-gray-600'">
         Menampilkan {{ startItem }} - {{ endItem }} dari {{ totalParentCount }} parent
       </div>
 
@@ -139,14 +186,20 @@
         <button
           :disabled="pagination.page === 1"
           @click="pagination.page--"
-          class="px-2 py-1 border rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+          class="px-2 py-1 border rounded transition-colors"
+          :class="theme === 'dark'
+            ? 'bg-gray-800 border-gray-700 text-gray-200'
+            : 'bg-white border-gray-300 text-gray-800'"
         >
           Prev
         </button>
         <button
           :disabled="pagination.page >= totalPages"
           @click="pagination.page++"
-          class="px-2 py-1 border rounded border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800"
+          class="px-2 py-1 border rounded transition-colors"
+          :class="theme === 'dark'
+            ? 'bg-gray-800 border-gray-700 text-gray-200'
+            : 'bg-white border-gray-300 text-gray-800'"
         >
           Next
         </button>
@@ -237,6 +290,10 @@ import { ref, computed, onMounted } from "vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
 import { useCrud } from "../composables/useCrud";
+
+const { theme } = defineProps({
+  theme: String
+});
 
 // --- USE CRUD khusus menu, pakai idField 'id_menu' ---
 const {

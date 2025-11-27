@@ -35,6 +35,7 @@
                 type="email"
                 autocomplete="email"
                 placeholder="Masukkan email"
+                @keyup.enter="login"
                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900
                        outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400
                        focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
@@ -45,16 +46,35 @@
           <!-- Password -->
           <div>
             <label class="block text-sm font-medium text-gray-900">Password</label>
-            <div class="mt-2">
+            <div class="mt-2 relative">
               <input
                 v-model="password"
-                type="password"
+                :type="showPassword ? 'text' : 'password'"
                 autocomplete="current-password"
                 placeholder="Masukkan password"
+                @keyup.enter="login"
                 class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900
                        outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400
                        focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm"
               />
+
+              <!-- TOGGLE EYE -->
+              <button
+                type="button"
+                @click="togglePassword"
+                class="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+              >
+                <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M2.458 12C3.732 7.943 7.522 5 12 5s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7s-8.268-2.943-9.542-7z" />
+                  <circle cx="12" cy="12" r="3" stroke-width="1.5" />
+                </svg>
+
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="w-5 h-5">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                    d="M3 3l18 18M10.477 10.44A3 3 0 0113.5 12m4.905 1.447C17.67 16.478 15 19 12 19c-4.478 0-8.268-2.943-9.542-7a11.95 11.95 0 012.676-4.35m3.11-2.229A11.95 11.95 0 0112 5c4.478 0 8.268 2.943 9.542 7a11.93 11.93 0 01-1.38 2.78" />
+                </svg>
+              </button>
             </div>
           </div>
 
@@ -83,28 +103,6 @@
   </div>
 </template>
 
-<style scoped>
-.fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.3s ease;
-}
-.fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
-
-@keyframes shake {
-  0% { transform: translateX(0); }
-  25% { transform: translateX(-4px); }
-  50% { transform: translateX(4px); }
-  75% { transform: translateX(-4px); }
-  100% { transform: translateX(0); }
-}
-.animate-shake {
-  animation: shake 0.25s ease;
-}
-</style>
-
 <script setup>
 import { ref } from "vue";
 import { useRouter } from "vue-router";
@@ -114,6 +112,13 @@ const email = ref("");
 const password = ref("");
 const loading = ref(false);
 const error = ref("");
+
+// 👇 tambahan baru
+const showPassword = ref(false);
+const togglePassword = () => {
+  showPassword.value = !showPassword.value;
+};
+// 👆 tidak mengubah logika login
 
 const auth = useAuthStore();
 const router = useRouter();
@@ -136,4 +141,3 @@ const login = async () => {
   }
 };
 </script>
-

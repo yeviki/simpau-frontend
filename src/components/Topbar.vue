@@ -9,6 +9,17 @@
         : 'bg-white text-gray-800 border-gray-300/40'
     ]"
   >
+    <!-- LEFT: MOBILE MENU BUTTON -->
+    <button
+      class="lg:hidden p-2 rounded-lg mr-3"
+      @click="$emit('openSidebarMobile')"
+      :class="theme === 'dark'
+        ? 'text-gray-100 hover:bg-slate-700/50'
+        : 'text-gray-800 hover:bg-gray-200/70'"
+    >
+      <Bars3Icon class="w-6 h-6" />
+    </button>
+
     <!-- Title Section -->
     <div>
       <h1
@@ -26,7 +37,6 @@
 
     <!-- Right Section -->
     <div class="flex items-center space-x-4">
-
       <!-- Profile Dropdown -->
       <Menu as="div" class="relative">
         <MenuButton
@@ -64,7 +74,7 @@
           />
         </MenuButton>
 
-        <!-- Dropdown -->
+        <!-- DROPDOWN -->
         <transition
           enter-active-class="transition ease-out duration-150"
           enter-from-class="transform opacity-0 scale-95"
@@ -127,8 +137,8 @@
 <script setup>
 import { computed } from "vue";
 import { useRoute } from "vue-router";
+import { Bars3Icon, ChevronDownIcon } from "@heroicons/vue/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
-import { ChevronDownIcon } from "@heroicons/vue/24/outline";
 
 const props = defineProps({
   user: Object,

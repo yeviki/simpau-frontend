@@ -222,10 +222,28 @@ const localPerPage = ref(props.perPage);
 
 /* SYNC PARENT */
 watch(localSearch, (v) => emit("update:search", v));
-watch(localPage, (v) => emit("update:page", v));
+
+/* keep localPage in sync with parent props.page (parent can change page externally) */
+watch(
+  () => props.page,
+  (v) => {
+    // if parent changed page, reflect locally
+    if (typeof v === "number" && v !== localPage.value) localPage.value = v;
+  }
+);
+
+/* when localPage changes, notify parent */
+watch(localPage, (v) => {
+  // guard: avoid emitting invalid numbers
+  const pageNum = Number.isFinite(v) ? v : 1;
+  emit("update:page", pageNum);
+});
+
+/* perPage sync */
 watch(localPerPage, (v) => {
   emit("update:perPage", v);
-  emit("update:page", 1);
+  // when perPage changes, reset to page 1
+  localPage.value = 1;
 });
 
 /* COLUMNS */
@@ -233,8 +251,8 @@ const dataColumns = computed(() => props.columns);
 
 /* FILTER SEARCH */
 const filtered = computed(() => {
-  if (!localSearch.value) return props.rows;
-  return props.rows.filter((item) =>
+  if (!localSearch.value) return props.rows ?? [];
+  return (props.rows ?? []).filter((item) =>
     JSON.stringify(item)
       .toLowerCase()
       .includes(localSearch.value.toLowerCase())
@@ -274,44 +292,59 @@ const sorted = computed(() => {
 
 /* PAGINATION */
 const totalPages = computed(() =>
-  Math.ceil(sorted.value.length / localPerPage.value)
+  Math.max(1, Math.ceil(sorted.value.length / localPerPage.value))
 );
 
+/* If parent side requests non-paginated, just return full */
 const paginated = computed(() => {
   if (!props.paginated) return sorted.value;
 
-  const start = (props.page - 1) * localPerPage.value;
+  // ensure current localPage is within bounds
+  const currentPage = Math.max(1, Math.min(localPage.value, totalPages.value));
+  const start = (currentPage - 1) * localPerPage.value;
   return sorted.value.slice(start, start + localPerPage.value);
 });
 
 const startIndex = computed(
-  () => (props.page - 1) * localPerPage.value
+  () => (Math.max(1, localPage.value) - 1) * localPerPage.value
+);
+
+/* If totalPages decreased (e.g. after deletion), make sure we move to last available page */
+watch(
+  () => totalPages.value,
+  (tp) => {
+    // if current page exceeds total pages, set to last page
+    if (localPage.value > tp) {
+      localPage.value = tp === 0 ? 1 : tp;
+      // watcher on localPage will emit update:page
+    }
+  }
 );
 
 /* BUTTON LOGIC — CLEAN */
 const paginationButtons = computed(() => {
   const buttons = [];
 
+  const total = totalPages.value;
+  const current = localPage.value;
+
   // First
   buttons.push({
     type: "button",
     label: "«",
-    action: () => emit("update:page", 1),
-    disabled: props.page === 1,
+    action: () => (localPage.value = 1),
+    disabled: current === 1,
   });
 
   // Prev
   buttons.push({
     type: "button",
     label: "‹",
-    action: () => emit("update:page", props.page - 1),
-    disabled: props.page === 1,
+    action: () => (localPage.value = Math.max(1, current - 1)),
+    disabled: current === 1,
   });
 
   // Pages
-  const total = totalPages.value;
-  const current = props.page;
-
   const temp = [];
   if (total <= 5) {
     for (let i = 1; i <= total; i++) temp.push(i);
@@ -325,13 +358,13 @@ const paginationButtons = computed(() => {
 
   temp.forEach((p) => {
     if (p === "...") {
-      buttons.push({ type: "dots" });
+      buttons.push({ type: "dots", label: "dots" });
     } else {
       buttons.push({
         type: "button",
         label: p,
-        active: p === props.page,
-        action: () => emit("update:page", p),
+        active: p === current,
+        action: () => (localPage.value = p),
       });
     }
   });
@@ -340,16 +373,16 @@ const paginationButtons = computed(() => {
   buttons.push({
     type: "button",
     label: "›",
-    action: () => emit("update:page", props.page + 1),
-    disabled: props.page === total,
+    action: () => (localPage.value = Math.min(total, current + 1)),
+    disabled: current === total,
   });
 
   // Last
   buttons.push({
     type: "button",
     label: "»",
-    action: () => emit("update:page", total),
-    disabled: props.page === total,
+    action: () => (localPage.value = total),
+    disabled: current === total,
   });
 
   return buttons;

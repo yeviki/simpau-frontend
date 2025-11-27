@@ -1,18 +1,38 @@
 <!-- layouts/DashboardLayout.vue -->
 <template>
   <div
-    class="flex min-h-screen transition-colors duration-300"
+    class="flex min-h-screen relative transition-colors duration-300"
     :class="theme === 'dark'
       ? 'bg-slate-900 text-gray-100'
       : 'bg-gray-50 text-gray-800'"
   >
+    <!-- MOBILE OVERLAY -->
+    <div
+      v-if="isMobile && sidebarOpen"
+      class="fixed inset-0 bg-black/50 z-30 lg:hidden"
+      @click="closeSidebar"
+    ></div>
+
     <!-- SIDEBAR -->
     <Sidebar
+      class="z-40"
+      :class="[
+        isMobile
+          ? 'fixed inset-y-0 left-0 transform transition-transform duration-300 lg:hidden'
+          : 'relative',
+
+        sidebarOpen
+          ? 'translate-x-0'
+          : isMobile
+            ? '-translate-x-full'
+            : ''
+      ]"
       :collapsed="collapsed"
       :theme="theme"
       :menu="menu"
       @toggleTheme="toggleTheme"
       @toggleCollapse="toggleCollapse"
+      @closeMobile="closeSidebar"
     />
 
     <!-- MAIN AREA -->
@@ -29,6 +49,7 @@
         :notificationsCount="notificationsCount"
         :userNavigation="userNavigation"
         @logout="logout"
+        @openSidebarMobile="openSidebar"
       />
 
       <!-- CONTENT -->
@@ -45,7 +66,7 @@
 </template>
 
 <script setup>
-import { ref, watch } from "vue";
+import { ref, watch, onMounted, onUnmounted } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
 import { Menu, Users, LayoutDashboard } from "lucide-vue-next";
@@ -74,6 +95,21 @@ watch(
 );
 
 const toggleCollapse = () => (collapsed.value = !collapsed.value);
+
+/* RESPONSIVE MOBILE */
+const isMobile = ref(window.innerWidth < 1024);
+const sidebarOpen = ref(false);
+
+const handleResize = () => {
+  isMobile.value = window.innerWidth < 1024;
+  if (!isMobile.value) sidebarOpen.value = false; // reset on desktop
+};
+
+const openSidebar = () => (sidebarOpen.value = true);
+const closeSidebar = () => (sidebarOpen.value = false);
+
+onMounted(() => window.addEventListener("resize", handleResize));
+onUnmounted(() => window.removeEventListener("resize", handleResize));
 
 /* STATIC MENU */
 const menu = [
