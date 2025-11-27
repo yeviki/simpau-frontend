@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage.vue";
 import DashboardLayout from "../layouts/DashboardLayout.vue";
 import UsersPage from "../pages/UsersPage.vue";
 import MenuPage from "../pages/MenuPage.vue";
+import RolesPage from "../pages/RolesPage.vue";
 
 const routes = [
   { path: "/", redirect: "/login" },
@@ -23,6 +24,7 @@ const routes = [
       { path: "dashboard", component: () => import("../pages/DashboardHome.vue") },
       { path: "users", component: UsersPage },
       { path: "menu", component: MenuPage },
+      { path: "roles", component: RolesPage },
     ],
   },
 ];

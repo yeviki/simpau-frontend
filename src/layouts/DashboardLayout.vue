@@ -69,7 +69,7 @@
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
-import { Menu, Users, LayoutDashboard } from "lucide-vue-next";
+import { Key, Menu, Users, LayoutDashboard } from "lucide-vue-next";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
 
@@ -116,6 +116,7 @@ const menu = [
   { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
   { label: "Users", path: "/users", icon: Users },
   { label: "Menu", path: "/menu", icon: Menu },
+  { label: "Roles", path: "/roles", icon: Key },
 ];
 
 const notificationsCount = ref(3);
