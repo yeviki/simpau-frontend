@@ -30,7 +30,7 @@
       >
         {{ title }}
         <span class="text-[11px] text-indigo-500 mt-0.5">
-          {{ user.role }}
+          {{ user.roles_id }}
         </span>
       </h1>
     </div>

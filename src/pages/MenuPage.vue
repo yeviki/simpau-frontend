@@ -254,10 +254,11 @@
         <div>
           <label class="text-sm text-gray-700 dark:text-gray-300">Icon Menu</label>
           <input
-            v-model="form.icon_menu"
-            placeholder="Masukkan icon menu"
-            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+          v-model="form.icon_menu"
+          placeholder="Masukkan icon menu"
+          class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
+          <label class="text-sm text-gray-700 dark:text-gray-300">https://lucide.dev/icons/shapes</label>
         </div>
 
         <!-- order_menu -->

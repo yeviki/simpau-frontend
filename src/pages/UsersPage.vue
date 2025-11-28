@@ -53,6 +53,19 @@
       </template>
 
       <div class="space-y-4">
+        <!-- FULLNAME -->
+        <div>
+          <label class="text-sm text-gray-200">Nama Lengkap</label>
+          <input
+            v-model="form.fullname"
+            placeholder="Masukkan fullname"
+            class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 border border-gray-300"
+          />
+          <p v-if="errors.fullname" class="text-red-500 text-xs mt-1">
+            {{ errors.fullname }}
+          </p>
+        </div>
+
         <!-- USERNAME -->
         <div>
           <label class="text-sm text-gray-200">Username</label>
@@ -97,12 +110,13 @@
         <div>
           <label class="text-sm text-gray-200">Role</label>
           <select
-            v-model="form.role"
+            v-model="form.roles_id"
             class="w-full px-3 py-1 rounded-lg bg-white text-black border border-gray-300"
           >
-            <option value="adminsuper">Admin Super</option>
-            <option value="adminlocal">Admin Local</option>
-            <option value="pimpinan">Pimpinan</option>
+            <option value="1">Admin Super</option>
+            <option value="2">Admin Local</option>
+            <option value="3">Pimpinan</option>
+            <option value="4">Pimpinan</option>
           </select>
         </div>
       </div>
@@ -150,7 +164,7 @@ const {
     username: "",
     email: "",
     password: "",
-    role: "adminlocal",
+    roles_id: "2",
   },
   rulesCreate: {
     username: ["required"],
@@ -211,9 +225,10 @@ const perPage = ref(5);
 
 // Kolom tabel
 const columns = [
+  { key: "fullname", label: "Nama Lengkap" },
   { key: "username", label: "Username" },
   { key: "email", label: "Email" },
-  { key: "role", label: "Role" },
+  { key: "roles_name", label: "Roles" },
   { key: "actions", label: "Action", slot: "actions" },
 ];
 
