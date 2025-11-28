@@ -29,6 +29,26 @@
       @update:sortDir="sortDir = $event"
       v-model:perPage="perPage"
     >
+      <!-- Slot Blokir -->
+      <template #blokir="{ row }">
+        <span
+          class="px-2 py-1 rounded text-xs font-semibold text-white"
+          :class="row.blokir === 'Ya' ? 'bg-red-500' : 'bg-green-500'"
+        >
+          {{ row.blokir === 'Ya' ? 'Ya' : 'Tidak' }}
+        </span>
+      </template>
+
+      <!-- Slot Status -->
+      <template #status="{ row }">
+        <span
+          class="px-2 py-1 rounded text-xs font-semibold text-white"
+          :class="row.id_status === 'Aktif' ? 'bg-green-500' : 'bg-yellow-500'"
+        >
+          {{ row.id_status === 'Aktif' ? 'Aktif' : 'Tidak Aktif' }}
+        </span>
+      </template>
+      
       <template #actions="{ row }">
         <button 
           @click="openEdit(row)" 
@@ -119,6 +139,30 @@
             <option value="4">Pimpinan</option>
           </select>
         </div>
+
+        <!-- BLOKIR -->
+        <div>
+          <label class="text-sm text-gray-200">Blokir</label>
+          <select
+            v-model="form.blokir"
+            class="w-full px-3 py-1 rounded-lg bg-white text-black border border-gray-300"
+          >
+            <option value="Ya">Ya</option>
+            <option value="Tidak">Tidak</option>
+          </select>
+        </div>
+
+        <!-- STATUS -->
+        <div>
+          <label class="text-sm text-gray-200">Status</label>
+          <select
+            v-model="form.id_status"
+            class="w-full px-3 py-1 rounded-lg bg-white text-black border border-gray-300"
+          >
+            <option value="Tidak Aktif">Tidak Aktif</option>
+            <option value="Aktif">Aktif</option>
+          </select>
+        </div>
       </div>
 
       <template #footer>
@@ -165,6 +209,8 @@ const {
     email: "",
     password: "",
     roles_id: "2",
+    blokir: "Tidak",
+    id_status: "Aktif",
   },
   rulesCreate: {
     username: ["required"],
@@ -235,6 +281,8 @@ const columns = [
   { key: "username", label: "Username" },
   { key: "email", label: "Email" },
   { key: "roles_name", label: "Roles" },
+  { key: "blokir", label: "Blokir", slot: "blokir" },
+  { key: "id_status", label: "Status", slot: "status" },
   { key: "actions", label: "Action", slot: "actions" },
 ];
 
