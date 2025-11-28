@@ -3,7 +3,6 @@
   <header
     :class="[
       'h-16 flex items-center justify-between px-6 transition-colors duration-300 border-b shadow-sm backdrop-blur-sm',
-
       theme === 'dark'
         ? 'bg-slate-900 text-gray-100 border-gray-700/40'
         : 'bg-white text-gray-800 border-gray-300/40'
@@ -29,8 +28,10 @@
         ]"
       >
         {{ title }}
+
+        <!-- ★ Added: Display Role Name or Role ID -->
         <span class="text-[11px] text-indigo-500 mt-0.5">
-          {{ user.roles_id }}
+          {{ roleLabel }}
         </span>
       </h1>
     </div>
@@ -144,6 +145,7 @@ const props = defineProps({
   user: Object,
   userNavigation: Array,
   theme: String,
+  roleName: String, // ★ Added
 });
 
 /* Avatar Fallback */
@@ -157,4 +159,10 @@ const computedAvatar = computed(() =>
 /* Title from Router meta */
 const route = useRoute();
 const title = computed(() => route.meta.title || "Dashboard");
+
+/* ★ Generate role label */
+const roleLabel = computed(() => {
+  if (props.roleName) return props.roleName;
+  return "Role ID: " + (props.user?.roles_id ?? "-");
+});
 </script>

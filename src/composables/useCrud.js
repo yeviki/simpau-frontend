@@ -109,13 +109,19 @@ export function useCrud(endpoint, options = {}) {
   const openEdit = async (rowOrId) => {
     resetForm();
     isEdit.value = true;
+
     if (typeof rowOrId === "object") {
       Object.assign(form, rowOrId);
     } else {
       await fetchOne(rowOrId, true);
     }
+
+    // 🔥 WAJIB: Pastikan password kosong saat edit
+    form.password = "";
+
     showModal.value = true;
   };
+
 
   // --- Validasi unik di client-side (untuk title/url dll) ---
   // Saat edit, sendiri diabaikan

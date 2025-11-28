@@ -48,6 +48,7 @@
         :user="auth.user"
         :notificationsCount="notificationsCount"
         :userNavigation="userNavigation"
+        :roleName="auth.user?.roles_name"
         @logout="logout"
         @openSidebarMobile="openSidebar"
       />
@@ -69,14 +70,17 @@
 import { ref, watch, onMounted, onUnmounted } from "vue";
 import Sidebar from "../components/Sidebar.vue";
 import Topbar from "../components/Topbar.vue";
-import { Key, Menu, Users, LayoutDashboard } from "lucide-vue-next";
+
+import * as Icons from "lucide-vue-next";
 import { useAuthStore } from "../stores/auth";
 import { useRouter } from "vue-router";
 
 const auth = useAuthStore();
 const router = useRouter();
 
-/* THEME CONTROL */
+/* ======================================
+   THEME CONTROL
+====================================== */
 const theme = ref(localStorage.getItem("theme") || "dark");
 const collapsed = ref(false);
 
@@ -85,24 +89,23 @@ const toggleTheme = () => {
   localStorage.setItem("theme", theme.value);
 };
 
-/* ADD OR REMOVE CLASS dark ON HTML */
 watch(
   () => theme.value,
-  (val) => {
-    document.documentElement.classList.toggle("dark", val === "dark");
-  },
+  (val) => document.documentElement.classList.toggle("dark", val === "dark"),
   { immediate: true }
 );
 
 const toggleCollapse = () => (collapsed.value = !collapsed.value);
 
-/* RESPONSIVE MOBILE */
+/* ======================================
+   RESPONSIVE MOBILE
+====================================== */
 const isMobile = ref(window.innerWidth < 1024);
 const sidebarOpen = ref(false);
 
 const handleResize = () => {
   isMobile.value = window.innerWidth < 1024;
-  if (!isMobile.value) sidebarOpen.value = false; // reset on desktop
+  if (!isMobile.value) sidebarOpen.value = false;
 };
 
 const openSidebar = () => (sidebarOpen.value = true);
@@ -111,14 +114,53 @@ const closeSidebar = () => (sidebarOpen.value = false);
 onMounted(() => window.addEventListener("resize", handleResize));
 onUnmounted(() => window.removeEventListener("resize", handleResize));
 
-/* STATIC MENU */
-const menu = [
-  { label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },
-  { label: "Users", path: "/users", icon: Users },
-  { label: "Menu", path: "/menu", icon: Menu },
-  { label: "Roles", path: "/roles", icon: Key },
-];
+/* ======================================
+   MENU DINAMIS (PENTING)
+====================================== */
 
+const resolveIcon = (name) => Icons[name] ?? Icons["Menu"];
+
+/* Membentuk struktur parent → children */
+function buildTree(menuList) {
+  const map = {};
+  const roots = [];
+
+  menuList.forEach((m) => {
+    map[m.id_menu] = {
+      id: m.id_menu,
+      label: m.title_menu,
+      path: m.url_menu,
+      icon: resolveIcon(m.icon_menu),
+      children: [],
+      open: false, // untuk expand/collapse submenu
+    };
+  });
+
+  menuList.forEach((m) => {
+    if (m.parent_id) {
+      map[m.parent_id].children.push(map[m.id_menu]);
+    } else {
+      roots.push(map[m.id_menu]); // parent level 0
+    }
+  });
+
+  return roots;
+}
+
+const menu = ref([]);
+
+/* Ambil menu dari backend → convert → tree */
+onMounted(async () => {
+  if (!auth.user) await auth.loadToken();
+
+  if (auth.menu && Array.isArray(auth.menu)) {
+    menu.value = buildTree(auth.menu); // ← FIX PENTING
+  }
+});
+
+/* ======================================
+   NOTIFICATIONS & PROFILE MENU
+====================================== */
 const notificationsCount = ref(3);
 
 const userNavigation = [

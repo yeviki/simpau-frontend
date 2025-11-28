@@ -180,7 +180,12 @@ const {
 
   transformForm: (f) => {
     const payload = { ...f };
-    if (payload.password === "") delete payload.password;
+
+    // HANYA kirim password jika benar-benar diisi
+    if (!payload.password || payload.password.trim() === "") {
+      delete payload.password;
+    }
+
     return payload;
   },
 
