@@ -189,10 +189,11 @@ const {
     return payload;
   },
 
+  // ⬇ Tambahkan ini
   afterSave: () => {
     Swal.fire({
       icon: "success",
-      title: "Berhasil!",
+      title: isEdit.value ? "Data berhasil diupdate" : "Data berhasil ditambahkan",
       timer: 1500,
       showConfirmButton: false,
     });

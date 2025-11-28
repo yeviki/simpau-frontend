@@ -158,6 +158,16 @@ const {
   defaultForm: { id: null, roles_name: "" },
   rulesCreate: { roles_name: ["required"] },
   rulesUpdate: { roles_name: ["required"] },
+
+  // ⬇ Tambahkan ini
+  afterSave: () => {
+    Swal.fire({
+      icon: "success",
+      title: isEdit.value ? "Roles berhasil diupdate" : "Roles berhasil ditambahkan",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  }
 });
 
 // SORT

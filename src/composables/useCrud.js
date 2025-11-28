@@ -171,9 +171,18 @@ export function useCrud(endpoint, options = {}) {
       if (afterSave) afterSave();
       return true;
     } catch (e) {
-      if (e.response?.data?.errors) {
+      // Backend kirim: { fields: { roles_name: "..."} }
+      if (e.response?.data?.fields) {
+        Object.assign(errors, e.response.data.fields);
+      }
+
+      // Jika backend kirim errors (format lain)
+      else if (e.response?.data?.errors) {
         Object.assign(errors, e.response.data.errors);
-      } else if (e.response?.data?.message) {
+      }
+
+      // Jika hanya message
+      else if (e.response?.data?.message) {
         errors.general = e.response.data.message;
       }
       return false;

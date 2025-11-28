@@ -135,14 +135,45 @@ export const useAuthStore = defineStore("auth", {
     // ===========================
     // LOGOUT
     // ===========================
-    logout() {
+    logout: async function() {
+      if (!this.token) {
+        this._clearAuthState();
+        return;
+      }
+
+      try {
+        // panggil API logout → sertakan token di header
+        await api.post(
+          "/auth/logout",
+          {},
+          {
+            headers: {
+              Authorization: `Bearer ${this.token}`,
+            },
+          }
+        );
+      } catch (err) {
+        console.error("Logout API error:", err);
+      } finally {
+        this._clearAuthState();
+      }
+    },
+
+    _clearAuthState() {
+      // reset state Pinia
       this.user = null;
       this.token = null;
       this.menu = [];
-      this.menuTree = []; // reset
+      this.menuTree = [];
 
       localStorage.removeItem("token");
-      window.location.href = "/login";
-    },
+
+      // redirect ke login, tunggu beberapa ms agar request benar-benar selesai
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 100);
+    }
+
+
   },
 });
