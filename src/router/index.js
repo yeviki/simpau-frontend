@@ -5,9 +5,20 @@ import { useAuthStore } from "../stores/auth";
 import LoginPage from "../pages/LoginPage.vue";
 import DashboardLayout from "../layouts/DashboardLayout.vue";
 
+// helper: cek apakah route sudah ada
+function routeExists(name) {
+  return router.getRoutes().some(r => r.name === name);
+}
+
 const routes = [
   // redirect awal
-  { path: "/", redirect: "/dashboard" },
+  {
+    path: "/",
+    redirect: () => {
+      const auth = useAuthStore();
+      return auth.isLoggedIn ? "/dashboard" : "/login";
+    }
+  },
 
   // login
   {
@@ -16,13 +27,13 @@ const routes = [
     meta: { guest: true },
   },
 
-  // ROOT LAYOUT (WAJIB PUNYA NAME)
+  // root layout
   {
     path: "/",
     name: "DashboardRoot",
     component: DashboardLayout,
     meta: { requiresAuth: true },
-    children: [], // akan ditambah dynamic routes
+    children: [],
   },
 ];
 
@@ -31,49 +42,48 @@ const router = createRouter({
   routes,
 });
 
-// Flag agar dynamic routes hanya didaftarkan sekali
+// Flag agar dynamic routes hanya di-load sekali
 let isDynamicRouteLoaded = false;
 
 // ====================================================
-// ROUTER MIDDLEWARE
+// ROUTER GUARD
 // ====================================================
 router.beforeEach(async (to, from, next) => {
   const auth = useAuthStore();
 
-  // saat refresh halaman → load token + profile + menu
+  // saat refresh → cek token + load user/menu
   await auth.loadToken();
 
-  // ================================
-  // LOAD DYNAMIC ROUTES SEKALI SAJA
-  // ================================
+  // =====================================
+  // LOAD DYNAMIC ROUTES (HANYA SEKALI)
+  // =====================================
   if (auth.isLoggedIn && !isDynamicRouteLoaded) {
-
-    // dynamic routes sudah dibentuk di auth.js
     const dynamicRoutes = auth.generateRoutesFromMenu(auth.menuTree);
 
     dynamicRoutes.forEach((r) => {
-      // WAJIB PAKAI "DashboardRoot"
-      router.addRoute("DashboardRoot", {
-        ...r,
-        path: r.path.startsWith("/") ? r.path : "/" + r.path, // cegah error
-      });
+      if (!routeExists(r.name)) {
+        router.addRoute("DashboardRoot", {
+          ...r,
+          path: r.path.startsWith("/") ? r.path : "/" + r.path,
+        });
+      }
     });
 
     isDynamicRouteLoaded = true;
 
-    // ulangi navigasi agar router mengenali route baru
+    // ulangi tujuan setelah route terdaftar
     return next({ ...to, replace: true });
   }
 
   // =================================
-  // PROTEKSI ROUTE AGAR BUTUH LOGIN
+  // BUTUH LOGIN
   // =================================
   if (to.meta.requiresAuth && !auth.isLoggedIn) {
     return next("/login");
   }
 
   // =================================
-  // CEGAH USER LOGIN MASUK KE /login
+  // SUDAH LOGIN, TAPI KE LOGIN PAGE
   // =================================
   if (to.meta.guest && auth.isLoggedIn) {
     return next("/dashboard");

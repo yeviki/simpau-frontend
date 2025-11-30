@@ -248,6 +248,18 @@
             placeholder="Masukkan url menu"
             class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
+          <label class="text-sm text-gray-700 dark:text-gray-300">Contoh : /dashboard</label>
+        </div>
+
+        <!-- url_menu -->
+        <div>
+          <label class="text-sm text-gray-700 dark:text-gray-300">Nama Pages Component</label>
+          <input
+            v-model="form.component"
+            placeholder="Harus sesuai huruf besar dan kecil"
+            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+          />
+          <label class="text-sm text-gray-700 dark:text-gray-300">Contoh : UsersPage</label>
         </div>
 
         <!-- icon_menu -->
@@ -258,7 +270,9 @@
           placeholder="Masukkan icon menu"
           class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
-          <label class="text-sm text-gray-700 dark:text-gray-300">https://lucide.dev/icons/shapes</label>
+          <a href="https://lucide.dev/icons/shapes" target="_blank" class="text-sm text-gray-700 dark:text-gray-300">
+            https://lucide.dev/icons/shapes
+          </a>
         </div>
 
         <!-- order_menu -->
@@ -320,12 +334,14 @@ const {
     url_menu: "",
     icon_menu: "",
     order_menu: "",
+    component: "",
   },
   rules: {
     title_menu: ["required"],
     url_menu: ["required"],
     icon_menu: ["required"],
     order_menu: ["required"],
+    component: [],
   },
   afterSave: () => {
     Swal.fire({ icon: "success", title: "Berhasil!", timer: 1500, showConfirmButton: false });

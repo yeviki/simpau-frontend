@@ -1,56 +1,60 @@
 // stores/auth.js
 import { defineStore } from "pinia";
 import api from "../api/axios";
-import router from "../router"; // ⬅️ WAJIB import router untuk addRoute()
+import router from "../router";
+
+function isTokenExpired(token) {
+  if (!token) return true;
+
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    const now = Math.floor(Date.now() / 1000);
+    return payload.exp < now;
+  } catch (e) {
+    return true;
+  }
+}
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
     user: null,
     token: localStorage.getItem("token") || null,
 
-    // menu flat dari backend (sudah ada)
     menu: [],
-
-    // ⬇️ menu tree baru (untuk sidebar)
     menuTree: [],
   }),
 
   getters: {
-    isLoggedIn: (state) => !!state.token,
+    isLoggedIn: (state) => {
+      return !!state.token && !isTokenExpired(state.token);
+    },
   },
 
   actions: {
-    // ===========================
+    // ===================================
     // LOGIN
-    // ===========================
+    // ===================================
     async login(payload) {
-      try {
-        const res = await api.post("/auth/login", payload);
+      const res = await api.post("/auth/login", payload);
 
-        // simpan token
-        this.token = res.data.token;
-        localStorage.setItem("token", this.token);
+      this.token = res.data.token;
+      localStorage.setItem("token", this.token);
 
-        // load profile & menu
-        await this.fetchProfile();
-        await this.loadMenu();
-
-      } catch (err) {
-        throw err;
-      }
+      await this.fetchProfile();
+      await this.loadMenu();
     },
 
-    // ===========================
+    // ===================================
     // FETCH PROFILE
-    // ===========================
+    // ===================================
     async fetchProfile() {
       const res = await api.get("/auth/me");
-      this.user = res.data; 
+      this.user = res.data;
     },
 
-    // ===========================
-    // BUILD MENU TREE (BARU)
-    // ===========================
+    // ===================================
+    // MENU TREE BUILDER
+    // ===================================
     buildMenuTree(menuList) {
       const map = {};
       const roots = [];
@@ -70,14 +74,13 @@ export const useAuthStore = defineStore("auth", {
       return roots;
     },
 
-    // ===========================
-    // BENTUK ROUTE DARI MENU (BARU)
-    // ===========================
+    // ===================================
+    // GENERATE ROUTES DARI MENU
+    // ===================================
     generateRoutesFromMenu(tree) {
       const routes = [];
 
       tree.forEach(item => {
-        // hanya generasi route jika url valid dan component ada
         if (item.url_menu && item.url_menu !== "#" && item.component) {
           routes.push({
             path: item.url_menu.startsWith("/") ? item.url_menu : "/" + item.url_menu,
@@ -86,8 +89,7 @@ export const useAuthStore = defineStore("auth", {
           });
         }
 
-        // cek anak
-        if (item.children && item.children.length > 0) {
+        if (item.children?.length) {
           routes.push(...this.generateRoutesFromMenu(item.children));
         }
       });
@@ -95,36 +97,33 @@ export const useAuthStore = defineStore("auth", {
       return routes;
     },
 
-    // ===========================
+    // ===================================
     // LOAD MENU
-    // ===========================
+    // ===================================
     async loadMenu() {
       if (!this.token) return;
 
       const res = await api.get("/auth/menu");
       this.menu = res.data.menu;
 
-      // 1️⃣ bentuk tree
+      // bentuk tree sekali saja
       this.menuTree = this.buildMenuTree(this.menu);
-
-      // 2️⃣ bentuk dynamic route dari tree
-      const dynamicRoutes = this.generateRoutesFromMenu(this.menuTree);
-
-      // 3️⃣ masukkan route sebagai child dari "/"
-      dynamicRoutes.forEach(r => {
-        router.addRoute("/", r);
-      });
     },
 
-    // ===========================
-    // LOAD TOKEN (REFRESH PAGE)
-    // ===========================
+    // ===================================
+    // LOAD TOKEN (refresh halaman)
+    // ===================================
     async loadToken() {
-      if (this.token && !this.user) {
+      if (!this.token) return;
+
+      if (isTokenExpired(this.token)) {
+        this.logout();
+        return;
+      }
+
+      if (!this.user) {
         try {
           await this.fetchProfile();
-
-          // ➕ load menu juga
           await this.loadMenu();
         } catch (e) {
           this.logout();
@@ -132,35 +131,25 @@ export const useAuthStore = defineStore("auth", {
       }
     },
 
-    // ===========================
+    // ===================================
     // LOGOUT
-    // ===========================
-    logout: async function() {
-      if (!this.token) {
-        this._clearAuthState();
-        return;
-      }
-
+    // ===================================
+    async logout() {
       try {
-        // panggil API logout → sertakan token di header
-        await api.post(
-          "/auth/logout",
-          {},
-          {
-            headers: {
-              Authorization: `Bearer ${this.token}`,
-            },
-          }
-        );
-      } catch (err) {
-        console.error("Logout API error:", err);
-      } finally {
-        this._clearAuthState();
-      }
+        if (this.token) {
+          await api.post("/auth/logout", {}, {
+            headers: { Authorization: `Bearer ${this.token}` }
+          });
+        }
+      } catch (_) {}
+
+      this._clearAuthState();
     },
 
+    // ===================================
+    // CLEAR AUTH STATE
+    // ===================================
     _clearAuthState() {
-      // reset state Pinia
       this.user = null;
       this.token = null;
       this.menu = [];
@@ -168,12 +157,10 @@ export const useAuthStore = defineStore("auth", {
 
       localStorage.removeItem("token");
 
-      // redirect ke login, tunggu beberapa ms agar request benar-benar selesai
+      // router push aman
       setTimeout(() => {
-        window.location.href = "/login";
-      }, 100);
+        router.push("/login");
+      }, 50);
     }
-
-
   },
 });

@@ -22,7 +22,7 @@
       <div class="flex items-center space-x-2">
         <img
           v-if="!collapsed"
-          src="https://tailwindcss.com/plus-assets/img/logos/mark.svg?color=indigo&shade=600"
+          src="../assets/logo_koe.png"
           class="h-8"
         />
         <span

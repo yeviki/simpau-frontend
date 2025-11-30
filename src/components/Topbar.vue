@@ -153,7 +153,7 @@ const computedAvatar = computed(() =>
   props.user?.name
     ? "https://ui-avatars.com/api/?background=4f46e5&color=fff&name=" +
       encodeURIComponent(props.user.name)
-    : "https://ui-avatars.com/api/?name="
+    : "src/assets/logo_koe.png"
 );
 
 /* Title from Router meta */
