@@ -40,8 +40,8 @@
                 placeholder="Masukkan email"
                 @keyup.enter="login"
                 :class="[
-                  'block w-full rounded-md bg-white px-3 py-1.5 text-sm text-gray-900 outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2',
-                  emailError ? 'outline-red-500' : 'outline-gray-300'
+                  'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-none border placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 sm:text-sm/6',
+                  isSubmitted && emailError ? 'border-red-500' : 'border-gray-300'
                 ]"
               />
 
@@ -58,8 +58,8 @@
                 placeholder="Masukkan password"
                 @keyup.enter="login"
                 :class="[
-                  'block w-full rounded-md bg-white px-3 py-1.5 text-sm text-gray-900 outline-1 -outline-offset-1 placeholder:text-gray-400 focus:outline-2 focus:-outline-offset-2',
-                  passwordError ? 'outline-red-500' : 'outline-gray-300'
+                  'block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline-none border placeholder:text-gray-400 focus:ring-2 focus:ring-indigo-600 sm:text-sm/6',
+                  isSubmitted && passwordError ? 'border-red-500' : 'border-gray-300'
                 ]"
               />
               <button type="button" @click="togglePassword"
@@ -112,6 +112,7 @@ const countdown = ref(0);
 const failCount = ref(0);
 let countdownInterval = null;
 let totalCountdown = ref(0);
+const isSubmitted = ref(false);
 
 const emailError = computed(() => !email.value.trim());
 const passwordError = computed(() => !password.value.trim());
@@ -240,6 +241,7 @@ onMounted(() => {
 });
 
 const login = async () => {
+  isSubmitted.value = true;
   // clear any pending error timeout so server response is shown reliably
   if (errorTimeout) {
     clearTimeout(errorTimeout);

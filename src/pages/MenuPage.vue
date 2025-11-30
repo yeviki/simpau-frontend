@@ -76,6 +76,7 @@
           <tr>
             <th class="px-4 py-2 text-left">#</th>
             <th class="px-4 py-2 text-left">Title Menu</th>
+            <th class="px-4 py-2 text-left">Component</th>
             <th class="px-4 py-2 text-left">Url Menu</th>
             <th class="px-4 py-2 text-left">Icon</th>
             <th class="px-4 py-2 text-left">Order</th>
@@ -95,6 +96,7 @@
             <tr :class="theme === 'dark' ? 'bg-gray-900' : 'bg-white'">
               <td class="px-4 py-2">{{ parentIndex(idx) }}</td>
               <td class="px-4 py-2 font-semibold">{{ parent.title_menu }}</td>
+              <td class="px-4 py-2">{{ parent.component }}</td>
               <td class="px-4 py-2">{{ parent.url_menu }}</td>
               <td class="px-4 py-2">{{ parent.icon_menu }}</td>
               <td class="px-4 py-2">{{ parent.order_menu }}</td>
@@ -135,6 +137,7 @@
             >
               <td class="px-4 py-2"></td>
               <td class="px-4 py-2 pl-8">↳ {{ child.title_menu }}</td>
+              <td class="px-4 py-2">{{ child.component }}</td>
               <td class="px-4 py-2">{{ child.url_menu }}</td>
               <td class="px-4 py-2">{{ child.icon_menu }}</td>
               <td class="px-4 py-2">{{ child.order_menu }}</td>

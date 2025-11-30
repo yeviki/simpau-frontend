@@ -202,14 +202,18 @@ const menus = ref([]);
 const roleMenus = ref([]);
 
 // Build tree
+// Build tree
 const buildMenuTree = (data) => {
   const map = {};
   const roots = [];
 
+  // mapping awal
   data.forEach(i => (map[i.id_menu] = { ...i, children: [] }));
 
+  // loop untuk parent & child
   data.forEach(i => {
-    if (i.parent_id === 0) {
+    // FIX di sini → parent null / "" juga dianggap root
+    if (i.parent_id === 0 || i.parent_id === null || i.parent_id === "" || i.parent_id === undefined) {
       roots.push(map[i.id_menu]);
     } else {
       map[i.parent_id]?.children.push(map[i.id_menu]);
@@ -219,47 +223,53 @@ const buildMenuTree = (data) => {
   return roots;
 };
 
+
 const menuTree = computed(() => buildMenuTree(menus.value));
 
 // Toggle parent
 const toggleParent = (id_menu, children) => {
-  if (roleMenus.value.includes(id_menu)) {
-    children.forEach(c => {
-      if (!roleMenus.value.includes(c.id_menu)) {
-        roleMenus.value.push(c.id_menu);
+  const checked = roleMenus.value.includes(id_menu);
+
+  const setChildren = (list, value) => {
+    list.forEach(c => {
+      const idx = roleMenus.value.indexOf(c.id_menu);
+
+      if (value) {
+        if (idx === -1) roleMenus.value.push(c.id_menu);
+      } else {
+        if (idx !== -1) roleMenus.value.splice(idx, 1);
       }
-      if (c.children.length) toggleParent(c.id_menu, c.children);
+
+      if (c.children && c.children.length) {
+        setChildren(c.children, value);
+      }
     });
-  } else {
-    children.forEach(c => {
-      const i = roleMenus.value.indexOf(c.id_menu);
-      if (i !== -1) roleMenus.value.splice(i, 1);
-      if (c.children.length) toggleParent(c.id_menu, c.children);
-    });
-  }
+  };
+
+  setChildren(children, checked);
 };
 
 // Toggle child update parent
 const updateParent = (child) => {
-  const parent_id = child.parent_id;
-  if (!parent_id) return;
+  const parent = menuTree.value.find(p => p.id_menu === child.parent_id);
+  if (!parent) return;
 
-  const siblings = menus.value.filter(m => m.parent_id === parent_id);
-  const allChecked = siblings.every(s => roleMenus.value.includes(s.id_menu));
+  const parentId = parent.id_menu;
 
-  const parentChecked = roleMenus.value.includes(parent_id);
+  // Jika minimal 1 child dicentang → parent harus dicentang
+  const hasChecked = parent.children.some(c => roleMenus.value.includes(c.id_menu));
+  const parentIndex = roleMenus.value.indexOf(parentId);
 
-  if (allChecked && !parentChecked) {
-    roleMenus.value.push(parent_id);
-  } else if (!allChecked && parentChecked) {
-    const i = roleMenus.value.indexOf(parent_id);
-    roleMenus.value.splice(i, 1);
+  if (hasChecked && parentIndex === -1) {
+    roleMenus.value.push(parentId);
   }
 
-  const parent = menus.value.find(m => m.id_menu === parent_id);
-  if (parent) updateParent(parent);
+  // Jika semua child uncheck → parent harus uncheck
+  const allUnchecked = parent.children.every(c => !roleMenus.value.includes(c.id_menu));
+  if (allUnchecked && parentIndex !== -1) {
+    roleMenus.value.splice(parentIndex, 1);
+  }
 };
-
 
 // ================================
 //   OPEN DETAIL → FETCH MENU
