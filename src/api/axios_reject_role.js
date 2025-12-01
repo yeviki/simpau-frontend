@@ -32,9 +32,14 @@ api.interceptors.response.use(
 
     // Pastikan kondisi 401/403 benar
     if (status === 401 || status === 403) {
-      // 🔥 Tidak logout, tetap login
-      // Jadi kita hanya bisa handle error di tempat pemanggil (misal useCrud)
-      console.warn("Akses ditolak (401/403) tapi user tetap login");
+      
+      // bersihkan token melalui Pinia (lebih aman daripada localStorage saja)
+      auth._clearAuthState();
+
+      // hindari redirect duplikat
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
 
     return Promise.reject(error);

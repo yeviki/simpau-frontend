@@ -2,6 +2,7 @@
 import { ref, reactive } from "vue";
 import api from "../api/axios";
 import { validate } from "../utils/validator";
+import Swal from "sweetalert2";
 
 /**
  * Composable global CRUD untuk API endpoints
@@ -171,6 +172,19 @@ export function useCrud(endpoint, options = {}) {
       if (afterSave) afterSave();
       return true;
     } catch (e) {
+
+      // 🔥 Akses Ditolak (403)
+      if (e.response?.status === 403) {
+        Swal.fire({
+          icon: "error",
+          title: "Akses Ditolak!",
+          text: e.response.data.message || "Akses ditutup untuk aksi ini",
+          confirmButtonColor: "#d33",
+        });
+        loading.value = false;
+        return false;
+      }
+
       // Backend kirim: { fields: { roles_name: "..."} }
       if (e.response?.data?.fields) {
         Object.assign(errors, e.response.data.fields);
@@ -202,6 +216,20 @@ export function useCrud(endpoint, options = {}) {
       await api.delete(`${endpoint}/${id}`);
       await load();
       if (afterDelete) afterDelete();
+    } catch (e) {
+
+      // 🔥 Akses Ditolak (403)
+      if (e.response?.status === 403) {
+        Swal.fire({
+          icon: "error",
+          title: "Akses Ditolak!",
+          text: e.response.data.message || "Akses ditutup untuk aksi ini",
+          confirmButtonColor: "#d33",
+        });
+        loading.value = false;
+        return false;
+      }
+
     } finally {
       loading.value = false;
     }

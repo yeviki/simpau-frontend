@@ -217,10 +217,10 @@
 
         <!-- parent_id -->
         <div>
-          <label class="text-sm text-gray-700 dark:text-gray-300">Parent Menu (kosong = parent utama)</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'" >Parent Menu (kosong = parent utama)</label>
           <select
             v-model="form.parent_id"
-            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+            class="block w-full rounded-md bg-white text-black dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           >
             <option value="">— Tidak ada —</option>
             <option
@@ -235,56 +235,56 @@
 
         <!-- title_menu -->
         <div>
-          <label class="text-sm text-gray-700 dark:text-gray-300">Title Menu</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Title Menu</label>
           <input
             v-model="form.title_menu"
             placeholder="Masukkan title menu"
-            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+            class="block w-full rounded-md bg-white text-black dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
         </div>
 
         <!-- url_menu -->
         <div>
-          <label class="text-sm text-gray-700 dark:text-gray-300">Url Menu</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Url Menu</label>
           <input
             v-model="form.url_menu"
             placeholder="Masukkan url menu"
-            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+            class="block w-full rounded-md bg-white text-black dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
-          <label class="text-sm text-gray-700 dark:text-gray-300">Contoh : /dashboard</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Contoh : /dashboard</label>
         </div>
 
         <!-- url_menu -->
         <div>
-          <label class="text-sm text-gray-700 dark:text-gray-300">Nama Pages Component</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Nama Pages Component</label>
           <input
             v-model="form.component"
             placeholder="Harus sesuai huruf besar dan kecil"
-            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+            class="block w-full rounded-md bg-white text-black dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
-          <label class="text-sm text-gray-700 dark:text-gray-300">Contoh : UsersPage</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Contoh : UsersPage</label>
         </div>
 
         <!-- icon_menu -->
         <div>
-          <label class="text-sm text-gray-700 dark:text-gray-300">Icon Menu</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Icon Menu</label>
           <input
           v-model="form.icon_menu"
           placeholder="Masukkan icon menu"
-          class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+          class="block w-full rounded-md bg-white text-black dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
-          <a href="https://lucide.dev/icons/shapes" target="_blank" class="text-sm text-gray-700 dark:text-gray-300">
+          <a href="https://lucide.dev/icons/shapes" target="_blank" :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">
             https://lucide.dev/icons/shapes
           </a>
         </div>
 
         <!-- order_menu -->
         <div>
-          <label class="text-sm text-gray-700 dark:text-gray-300">Order Menu</label>
+          <label :class="theme === 'dark' ? 'text-gray-100' : 'text-gray-900'">Order Menu</label>
           <input
             v-model="form.order_menu"
             placeholder="Masukkan order menu"
-            class="block w-full rounded-md bg-white dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
+            class="block w-full rounded-md bg-white text-black dark:bg-gray-800 dark:text-gray-200 px-3 py-1.5 text-base border border-gray-300 dark:border-gray-600"
           />
         </div>
 

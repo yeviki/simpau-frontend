@@ -205,6 +205,7 @@ const {
 } = useCrud("/users", {
   defaultForm: {
     id: null,
+    fullname: "",
     username: "",
     email: "",
     password: "",
