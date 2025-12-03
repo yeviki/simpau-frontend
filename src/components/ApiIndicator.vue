@@ -4,8 +4,9 @@
     <!-- RIGHT SIDE (SPARKLINE CARD) -->
     <div
       v-if="pingHistory.length > 1"
-      class="sparkline-card rounded-md p-2 transition-all duration-300"
+      class="sparkline-card rounded-md p-2 transition-all duration-300 flex items-center justify-center"
       :class="cardThemeClass"
+      style="height: 32px;"
     >
       <svg :width="70" :height="24" class="sparkline">
         <polyline
@@ -26,7 +27,7 @@
     </div>
 
     <!-- LEFT SIDE (STATUS + LASTPING) -->
-    <div class="flex flex-col justify-start leading-none" style="height: 30px;">
+    <div class="flex flex-col justify-center leading-none" style="height: 32px;">
 
       <!-- Status Bulat -->
       <div
@@ -41,10 +42,12 @@
       </div>
 
       <!-- Last Ping -->
-      <span class="text-xs dark:text-gray-200 mt-1 block">
+      <span
+        class="text-xs mt-1 block transition-colors duration-300"
+        :class="[pingTextColor, theme === 'dark' ? 'dark:text-gray-200' : '']"
+        >
         {{ lastPing }} ms
       </span>
-
     </div>
 
   </div>
@@ -58,9 +61,10 @@ const props = defineProps({
   theme: { type: String, default: "light" },
   rgbMode: { type: Boolean, default: false }  // NEW
 });
+
 const cardThemeClass = computed(() => {
   if (props.rgbMode) {
-    return `border border-transparent`
+    return `border border-transparent bg-gradient-to-r from-transparent`
   }
 
   return props.theme === "dark"
@@ -68,11 +72,17 @@ const cardThemeClass = computed(() => {
     : "bg-white/60 backdrop-blur-md border border-gray-300 shadow";
 });
 
-
-
 const lastPing = ref(0);
 const pingHistory = ref([]);
 const status = ref("checking");
+
+const pingTextColor = computed(() => ({
+  connected: "text-green-400",
+  slow: "text-yellow-300",
+  disconnected: "text-red-400",
+  checking: "text-gray-400",
+}[status.value]));
+
 
 let interval = 2000;
 let timer = null;
@@ -131,9 +141,9 @@ const statusColor = computed(() => ({
 }[status.value]));
 
 const neonGlow = computed(() => ({
-  connected: "shadow-[0_0_12px_3px_rgba(0,255,0,0.9)]",
-  slow: "shadow-[0_0_12px_3px_rgba(255,255,0,0.9)]",
-  disconnected: "shadow-[0_0_12px_3px_rgba(255,0,0,1)]",
+  connected: "shadow-[0_0_4px_1px_rgba(0,255,0,0.45)]",
+  slow: "shadow-[0_0_4px_1px_rgba(255,255,0,0.45)]",
+  disconnected: "shadow-[0_0_4px_1px_rgba(255,0,0,0.55)]",
   checking: "shadow-none",
 }[status.value]));
 
@@ -186,7 +196,6 @@ function hsvToHex(h, s, v) {
 const sparklineColor = computed(() => {
   if (props.rgbMode) return hsvToHex(hue.value, 1, 1);
 
-  // fallback normal
   return props.theme === "dark" ? "#ffffff" : "#1f2937";
 });
 </script>
@@ -224,5 +233,4 @@ const sparklineColor = computed(() => {
   justify-content: center;
   align-items: center;
 }
-
 </style>
