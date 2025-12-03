@@ -16,8 +16,8 @@
           stroke-width="2"
         />
         <text
-          x="2"
-          y="22"
+          x="44"
+          y="7"
           font-size="8"
           :fill="theme === 'dark' ? '#ddd' : '#444'"
         >
@@ -27,11 +27,11 @@
     </div>
 
     <!-- LEFT SIDE (STATUS + LASTPING) -->
-    <div class="flex flex-col justify-center leading-none" style="height: 32px;">
+    <div class="flex flex-col justify-center leading-none" style="height: 28px;">
 
       <!-- Status Bulat -->
       <div
-        class="relative w-11 h-4 rounded-full transition-all duration-300"
+        class="relative w-13 h-4 rounded-full transition-all duration-300"
         :class="[statusColor, neonGlow, isDisconnected ? 'shake' : '']"
         :title="tooltipText"
       >
