@@ -38,6 +38,9 @@
 
     <!-- Right Section -->
     <div class="flex items-center space-x-4">
+      <!-- 🌐 API Indicator (Neon Glow + Ping Sparkline + Dark Mode) -->
+      <ApiIndicator />
+      
       <!-- Profile Dropdown -->
       <Menu as="div" class="relative">
         <MenuButton
@@ -140,6 +143,7 @@ import { computed } from "vue";
 import { useRoute } from "vue-router";
 import { Bars3Icon, ChevronDownIcon } from "@heroicons/vue/24/outline";
 import { Menu, MenuButton, MenuItem, MenuItems } from "@headlessui/vue";
+import ApiIndicator from "./ApiIndicator.vue";
 
 const props = defineProps({
   user: Object,

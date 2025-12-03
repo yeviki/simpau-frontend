@@ -7,7 +7,29 @@
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
-      <div class="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12">
+      <div class="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 relative">
+        <!-- API Status Indicator -->
+        <div class="absolute top-3 right-3 group">
+          <div
+            class="w-4 h-4 rounded-full shadow-md neon-glow transition-all"
+            :class="{
+              'bg-green-500 neon-green': apiConnected && !apiSlow,
+              'bg-yellow-400 neon-yellow': apiConnected && apiSlow,
+              'bg-red-500 neon-red': !apiConnected
+            }"
+          ></div>
+
+          <!-- Tooltip -->
+          <div
+            class="absolute right-0 mt-1 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap"
+          >
+            <span v-if="!apiConnected">❌ Disconnected</span>
+            <span v-else-if="apiSlow">⚠ Connection Slow ({{ pingTime }} ms)</span>
+            <span v-else>✅ Connected ({{ pingTime }} ms)</span>
+          </div>
+        </div>
+
+
         <!-- Error Alert + Countdown -->
         <transition name="fade">
           <div v-if="error" class="mb-4 rounded-lg bg-red-50 border border-red-400 text-red-700 p-3 text-center animate-shake">
@@ -125,6 +147,51 @@ const auth = useAuthStore();
 
 const togglePassword = () => (showPassword.value = !showPassword.value);
 
+// ---- API CONNECTION STATUS ----
+const apiConnected = ref(false);
+const apiSlow = ref(false);
+const pingTime = ref(0);
+
+// adaptive interval
+let pingInterval = 3000; 
+let timer = null;
+
+const checkApiConnection = async () => {
+  const start = performance.now();
+
+  try {
+    const res = await fetch(import.meta.env.VITE_API_URL + "/ping");
+
+    const end = performance.now();
+    pingTime.value = Math.round(end - start);
+
+    apiConnected.value = res.ok;
+
+    // Slow jika > 300 ms
+    apiSlow.value = apiConnected.value && pingTime.value > 300;
+
+    // adaptive timer
+    if (!apiConnected.value) {
+      pingInterval = 2000; // cepat kalau error
+    } else if (apiSlow.value) {
+      pingInterval = 4000; // slow, cek lebih sering
+    } else {
+      pingInterval = 8000; // stabil → cek jarang
+    }
+
+  } catch (e) {
+    apiConnected.value = false;
+    apiSlow.value = false;
+    pingTime.value = 0;
+    pingInterval = 2000; // koneksi buruk → periksa cepat
+  }
+
+  // restart interval
+  clearTimeout(timer);
+  timer = setTimeout(checkApiConnection, pingInterval);
+};
+
+// Bagian alert time salah password
 const formatTime = (seconds) => {
   const m = Math.floor(seconds / 60).toString().padStart(2, "0");
   const s = (seconds % 60).toString().padStart(2, "0");
@@ -238,6 +305,9 @@ onMounted(() => {
     const data = loadBlocked(email.value);
     if (data) startCountdown(data.blocked, data.fail);
   }
+
+  // cek API pertama kali
+  checkApiConnection();
 });
 
 const login = async () => {
@@ -311,6 +381,45 @@ const login = async () => {
   40%,80% { transform: translateX(6px); }
 }
 .animate-shake { animation: shake 0.45s; }
+
+/* ==== Indikator Shimmer Pulse ==== */
+/* ===== Neon Glow Animation ===== */
+
+@keyframes neonPulse {
+  0% {
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
+  }
+  50% {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 12px rgba(255,255,255,0.8));
+  }
+  100% {
+    transform: scale(0.9);
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
+  }
+}
+
+.neon-glow {
+  animation: neonPulse 1.5s infinite ease-in-out;
+}
+
+/* ===== Color Modes (Gradient Glow) ===== */
+
+.neon-green {
+  background: radial-gradient(circle at center, #22ff55, #0fa030);
+  box-shadow: 0 0 5px #00ff66, 0 0 10px #00ff66;
+}
+
+.neon-yellow {
+  background: radial-gradient(circle at center, #ffee55, #d1a800);
+  box-shadow: 0 0 5px #ffdd33, 0 0 10px #ffdd33;
+}
+
+.neon-red {
+  background: radial-gradient(circle at center, #ff5555, #a00000);
+  box-shadow: 0 0 5px #ff4444, 0 0 10px #ff4444;
+}
 
 </style>
 
