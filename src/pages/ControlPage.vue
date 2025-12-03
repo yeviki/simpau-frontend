@@ -1,4 +1,4 @@
-<!-- pages/ModulePage.vue -->
+<!-- pages/ControlPage.vue -->
 <template>
   <div>
     <!-- Header -->
@@ -29,6 +29,17 @@
       @update:sortDir="sortDir = $event"
       v-model:perPage="perPage"
     >
+
+    <!-- Slot Status -->
+      <template #status="{ row }">
+        <span
+          class="px-2 py-1 rounded text-xs font-semibold text-white"
+          :class="row.id_status === 2 ? 'bg-green-500' : 'bg-yellow-500'"
+        >
+          {{ row.id_status === 2 ? 'Aktif' : 'Tidak Aktif' }}
+        </span>
+      </template>
+
       <template #actions="{ row }">
         <button 
           @click="openEdit(row)" 
@@ -53,6 +64,8 @@
       </template>
 
       <div class="space-y-4">
+
+        <!-- Label Control -->
         <div>
           <label class="text-sm text-gray-200">Label Control</label>
           <input
@@ -65,6 +78,7 @@
           </p>
         </div>
 
+        <!-- Nama Control -->
         <div>
           <label class="text-sm text-gray-200">Nama Control</label>
           <input
@@ -76,6 +90,24 @@
             {{ errors.control_name }}
           </p>
         </div>
+
+        <!-- <Dropdown
+          v-model="form.id_status"
+          label="Status"
+          url="/master/combo-status"
+          label-field="status_name"
+          value-field="id"
+          placeholder="-- Pilih Status --"
+        /> -->
+        <SearchableSelect
+        v-model="selectedValue"
+        label="Pilih User"
+        url="/master/combo-status"
+        label-field="status_name"
+        value-field="id"
+        placeholder="Cari user..."
+      />
+
       </div>
 
       <template #footer>
@@ -87,16 +119,17 @@
         </button>
       </template>
     </Modal>
-
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from "vue";
+import { ref, onMounted } from "vue";
 import DataTable from "../components/DataTable.vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
 import { useCrud } from "../composables/useCrud";
+import Dropdown from "../components/Dropdown.vue";
+import SearchableSelect from "../components/SearchableSelect.vue";
 
 const { theme } = defineProps({ theme: String });
 
@@ -106,7 +139,7 @@ const {
   pagination, query, openAdd, openEdit,
   save, remove, load, resetForm
 } = useCrud("/control", {
-  defaultForm: { id: null, control_name: "", label_control: "" },
+  defaultForm: { id: null, control_name: "", label_control: "", id_status: "" },
   rulesCreate: { 
     control_name: ["required"], 
     label_control: ["required"] 
@@ -116,7 +149,6 @@ const {
     label_control: ["required"]  
   },
 
-  // ⬇ Tambahkan ini
   afterSave: () => {
     Swal.fire({
       icon: "success",
@@ -136,6 +168,7 @@ const perPage = ref(5);
 const columns = [
   { key: "label_control", label: "Label Control" },
   { key: "control_name", label: "Nama Control" },
+  { key: "id_status", label: "Status", slot: "status" },
   { key: "actions", label: "Action", slot: "actions" },
 ];
 
