@@ -131,7 +131,7 @@
           <label class="text-sm text-gray-200">Role</label>
           <select
             v-model="form.roles_id"
-            class="w-full px-3 py-1 rounded-lg bg-white text-black border border-gray-300"
+            class="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300"
           >
             <option value="1">Admin Super</option>
             <option value="2">Admin Local</option>
@@ -145,7 +145,7 @@
           <label class="text-sm text-gray-200">Blokir</label>
           <select
             v-model="form.blokir"
-            class="w-full px-3 py-1 rounded-lg bg-white text-black border border-gray-300"
+            class="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300"
           >
             <option value="Ya">Ya</option>
             <option value="Tidak">Tidak</option>
@@ -157,7 +157,7 @@
           <label class="text-sm text-gray-200">Status</label>
           <select
             v-model="form.id_status"
-            class="w-full px-3 py-1 rounded-lg bg-white text-black border border-gray-300"
+            class="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300"
           >
             <option value="Tidak Aktif">Tidak Aktif</option>
             <option value="Aktif">Aktif</option>

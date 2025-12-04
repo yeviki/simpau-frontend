@@ -30,13 +30,13 @@
       v-model:perPage="perPage"
     >
 
-    <!-- Slot Status -->
+      <!-- Slot Status -->
       <template #status="{ row }">
         <span
           class="px-2 py-1 rounded text-xs font-semibold text-white"
-          :class="row.id_status === 2 ? 'bg-green-500' : 'bg-yellow-500'"
+          :class="row.id_status === 1 ? 'bg-green-500' : 'bg-yellow-500'"
         >
-          {{ row.id_status === 2 ? 'Aktif' : 'Tidak Aktif' }}
+          {{ row.id_status === 1 ? 'Aktif' : 'Tidak Aktif' }}
         </span>
       </template>
 
@@ -91,23 +91,22 @@
           </p>
         </div>
 
-        <!-- <Dropdown
+        <Dropdown
           v-model="form.id_status"
           label="Status"
           url="/master/combo-status"
           label-field="status_name"
           value-field="id"
           placeholder="-- Pilih Status --"
+        />
+        <!-- <SearchableSelect
+          v-model="form.id_status"
+          label="Pilih User"
+          url="/master/combo-status"
+          label-field="status_name"
+          value-field="id"
+          placeholder="Cari status..."
         /> -->
-        <SearchableSelect
-        v-model="selectedValue"
-        label="Pilih User"
-        url="/master/combo-status"
-        label-field="status_name"
-        value-field="id"
-        placeholder="Cari user..."
-      />
-
       </div>
 
       <template #footer>

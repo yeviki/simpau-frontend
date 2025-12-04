@@ -80,6 +80,15 @@ Contoh untuk memilih banyak role:
   value-field="id"
 />
 
+<SearchableSelect
+  v-model="form.id_status"
+  label="Pilih User"
+  url="/master/combo-status"
+  label-field="status_name"
+  value-field="id"
+  placeholder="Cari user..."
+/>
+
 
 👍 Output form.role_ids akan menjadi:
 
