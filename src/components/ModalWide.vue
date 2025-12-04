@@ -1,7 +1,7 @@
 <!-- components/ModalWide.vue -->
 <template>
-  <TransitionRoot as="template" :show="true">
-    <Dialog class="relative z-50" @close="$emit('close')">
+  <TransitionRoot as="template" :show="modelValue">
+    <Dialog class="relative z-50" @close="closeModal">
 
       <!-- BACKDROP -->
       <TransitionChild
@@ -41,7 +41,7 @@
             >
               <!-- CLOSE BTN -->
               <button
-                @click="$emit('close')"
+                @click="closeModal"
                 class="absolute top-4 right-5 text-gray-300 hover:text-white text-xl"
               >
                 ✕
@@ -52,7 +52,7 @@
                 <slot name="title" />
               </h2>
 
-              <!-- BODY (Overflow Y scroll for long permission list) -->
+              <!-- BODY -->
               <div class="text-gray-200 max-h-[70vh] overflow-y-auto pr-2 space-y-4 custom-scroll">
                 <slot />
               </div>
@@ -73,12 +73,21 @@
 </template>
 
 <script setup>
-import {
-  Dialog,
-  DialogPanel,
-  TransitionChild,
-  TransitionRoot,
-} from "@headlessui/vue";
+import { Dialog, DialogPanel, TransitionChild, TransitionRoot } from "@headlessui/vue";
+
+defineProps({
+  modelValue: {
+    type: Boolean,
+    required: true,
+  }
+});
+
+const emit = defineEmits(["update:modelValue", "close"]);
+
+const closeModal = () => {
+  emit("update:modelValue", false);
+  emit("close");
+};
 </script>
 
 <style scoped>

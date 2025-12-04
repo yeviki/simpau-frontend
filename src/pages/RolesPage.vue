@@ -30,20 +30,6 @@
       v-model:perPage="perPage"
     >
       <template #actions="{ row }">
-        <button 
-          @click="openEdit(row)" 
-          class="rounded-sm bg-indigo-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500"
-        >
-          Edit
-        </button>
-
-        <button 
-          @click="confirmDelete(row.id)" 
-          class="rounded-sm bg-red-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500"
-        >
-          Hapus
-        </button>
-
         <!-- Setting Role Akses Menu -->
         <button 
           @click="openDetail(row)" 
@@ -52,10 +38,25 @@
           Set Roles Menu
         </button>
 
+        
+        <button 
+        @click="openEdit(row)" 
+        class="rounded-sm bg-indigo-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-indigo-500"
+        >
+          Edit
+        </button>
+      
+        <button 
+          @click="confirmDelete(row.id)" 
+          class="rounded-sm bg-red-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-red-500"
+        >
+          Hapus
+        </button>
+    
         <!-- Setting Permission Akses Control -->
         <button 
           @click="openDetailPermission(row)" 
-          class="rounded-sm bg-purple-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-purple-500"
+          class="rounded-sm bg-green-600 ml-2 px-2 py-1 text-xs font-semibold text-white shadow-xs hover:bg-green-500"
         >
           Set Permission
         </button>
@@ -149,7 +150,11 @@
     <!-- /////////////////////////////////////////////////////////////////////////////// -->
     <!-- Modal Roles Permission -->
     <!-- /////////////////////////////////////////////////////////////////////////////// -->
-    <ModalWide v-if="showPermissionModal" @close="showPermissionModal = false">
+    <ModalWide v-if="showPermissionModal"
+    :modelValue="showPermissionModal"
+    @update:modelValue="showPermissionModal = $event"
+    @close="closePermissionModal"
+    >
 
       <!-- TITLE -->
       <template #title>
@@ -183,7 +188,7 @@
 
             <!-- CONTROL -->
             <div>
-             <label class="text-gray-300">Control</label>
+            <label class="text-gray-300">Control</label>
               <Multiselect
                 v-model="formPermission.control_id"
                 :options="controlsList"
@@ -214,146 +219,152 @@
         </div>
 
         <!-- LIST PERMISSION PER MODULE -->
+        <!-- Wrapper scrollable untuk list permission -->
         <div 
           v-else
-          v-for="module in groupedPermissions"
-          :key="module.module_id"
-          class="border border-white/10 rounded-xl overflow-hidden mb-6 " :class="[
-                'transition-colors',
-                  theme === 'dark'
-                    ? 'bg-slate-800 text-gray-100'
-                    : 'bg-gray-50 text-gray-900'
-                ]"
+          class="space-y-4 max-h-[400px] overflow-y-auto"
         >
-          <!-- HEADER MODULE -->
-          <div class="flex justify-between items-center px-4 py-3 bg-gray-900/70 border-b border-gray-700" >
-            <!-- LEFT SIDE: Checkbox & Module Title -->
-            <div 
-              class="flex items-center space-x-3 cursor-pointer"
-              @click="toggleCheckAll(module)"
-            >
-              <input
-                type="checkbox"
-                :checked="isAllChecked(module)"
-                @change.stop="toggleCheckAll(module)" 
-                class="accent-indigo-600"
-              />
-
-              <h2 class="font-semibold text-white text-lg capitalize select-none">
-                {{ module.module_name }}
-              </h2>
-            </div>
-
-            <!-- RIGHT SIDE: bulk actions -->
-            <div class="flex items-center gap-2">
-              <!-- Only show when at least one is checked -->
-              <template v-if="hasChecked(module)">
-                <!-- Bulk Aktifkan -->
-                <button
-                  @click="bulkSetStatus(module, 1)"
-                  class="px-3 py-1 bg-blue-600 text-white rounded text-xs"
-                >
-                  Aktifkan
-                </button>
-                <!-- Bulk Non-Aktifkan -->
-                <button
-                  @click="bulkSetStatus(module, 0)"
-                  class="px-3 py-1 bg-yellow-600 text-white rounded text-xs"
-                >
-                  Nonaktifkan
-                </button>
-                <!-- Bulk Hapus -->
-                <button
-                  @click="bulkDelete(module)"
-                  class="px-3 py-1 bg-red-600 text-white rounded text-xs"
-                >
-                  Hapus
-                </button>
-              </template>
-              <span class="text-gray-400 text-xs">{{ module.controls.length }} controls</span>
-            </div>
-          </div>
-
-          <!-- TABEL CONTROL -->
-          <table class="w-full text-gray-200">
-            <thead :class="['transition-colors', theme === 'dark' ? 'bg-slate-800 text-gray-100' : 'bg-gray-50 text-gray-900']"
-            >
-              <tr>
-                <th class="p-2 w-10 text-left">#</th>
-                <th class="p-2 text-left">Label Control</th>
-                <th class="p-2 w-100 text-left">Control</th>
-                <th class="p-2 w-30 text-left">Status</th>
-                <!-- <th class="p-2 w-40 text-center">Aksi</th> -->
-              </tr>
-            </thead>
-
-            <tbody :class="[
-            'divide-y transition-colors',
-            theme === 'dark'
-              ? 'divide-gray-700 bg-slate-900'
-              : 'divide-gray-200 bg-white'
-          ]">
-              <tr :class="[
-                'transition-colors',
-                  theme === 'dark'
-                    ? 'bg-slate-800 text-gray-100'
-                    : 'bg-gray-50 text-gray-900'
-                ]"
-                v-for="ctrl in module.controls"
-                :key="`perm-${ctrl.id}`"
-                class="border-t border-gray-700 cursor-pointer hover:bg-gray-700/40"
-                @click="toggleRow(ctrl, module)"
+          <div 
+            v-for="module in groupedPermissions"
+            :key="module.module_id"
+            class="border border-white/10 rounded-xl overflow-hidden " :class="[
+                  'transition-colors',
+                    theme === 'dark'
+                      ? 'bg-slate-800 text-gray-100'
+                      : 'bg-gray-50 text-gray-900'
+                  ]"
+          >
+            <!-- HEADER MODULE -->
+            <div class="flex justify-between items-center px-4 py-3 bg-gray-900/70 border-b border-gray-700" >
+              <!-- LEFT SIDE: Checkbox & Module Title -->
+              <div 
+                class="flex items-center space-x-3 cursor-pointer"
+                @click="toggleCheckAll(module)"
               >
-                <td class="p-2" >
-                  <input
-                    type="checkbox"
-                    v-model="ctrl.checked"
-                    @change.stop="onControlCheck(module)"
-                    @click.stop
-                    class="accent-indigo-600"
-                  />
-                </td>
+                <input
+                  type="checkbox"
+                  :checked="isAllChecked(module)"
+                  @change.stop="toggleCheckAll(module)" 
+                  class="accent-indigo-600"
+                />
 
-                <td class="p-2 capitalize">
-                  {{ ctrl.label_control }}
-                </td>
-                <td class="p-2 capitalize">
-                  {{ ctrl.control_name }}
-                </td>
+                <h2 class="font-semibold text-white text-lg capitalize select-none">
+                  {{ module.module_name }}
+                </h2>
+              </div>
 
-                <!-- STATUS -->
-                <td class="p-2">
-                  <span
-                    :class="{
-                      'text-green-400 font-semibold': ctrl.id_status == 1,
-                      'text-red-400 font-semibold': ctrl.id_status != 1
-                    }"
-                  >
-                    {{ ctrl.id_status == 0 ? 'Tidak Aktif' : 'Aktif' }}
-                  </span>
-                </td>
-
-                <!-- AKSI TOGGLE STATUS -->
-                <!-- <td class="p-2 text-center flex gap-2 justify-center">
+              <!-- RIGHT SIDE: bulk actions -->
+              <div class="flex items-center gap-2">
+                <!-- Only show when at least one is checked -->
+                <template v-if="hasChecked(module)">
+                  <!-- Bulk Aktifkan -->
                   <button
-                    @click.stop="toggleStatus(ctrl)"
-                    class="px-3 py-1 rounded text-white text-xs"
-                    :class="ctrl.id_status == 1 ? 'bg-yellow-600' : 'bg-blue-600'"
+                    @click="bulkSetStatus(module, 1)"
+                    class="px-3 py-1 bg-blue-600 text-white rounded text-xs"
                   >
-                    {{ ctrl.id_status == 1 ? 'Nonaktifkan' : 'Aktifkan' }}
+                    Aktifkan
                   </button>
+                  <!-- Bulk Non-Aktifkan -->
                   <button
-                    @click.stop="deletePermission(ctrl, module)"
-                    class="px-3 py-1 bg-red-600 text-white text-xs rounded"
+                    @click="bulkSetStatus(module, 0)"
+                    class="px-3 py-1 bg-yellow-600 text-white rounded text-xs"
+                  >
+                    Nonaktifkan
+                  </button>
+                  <!-- Bulk Hapus -->
+                  <button
+                    @click="bulkDelete(module)"
+                    class="px-3 py-1 bg-red-600 text-white rounded text-xs"
                   >
                     Hapus
                   </button>
-                </td> -->
+                </template>
+                <span class="text-gray-400 text-xs">{{ module.controls.length }} controls</span>
+              </div>
+            </div>
 
-              </tr>
-            </tbody>
-          </table>
+            <!-- TABEL CONTROL -->
+            <table class="w-full text-gray-200">
+              <thead :class="['transition-colors', theme === 'dark' ? 'bg-slate-800 text-gray-100' : 'bg-gray-50 text-gray-900']"
+              >
+                <tr>
+                  <th class="p-2 w-10 text-left">#</th>
+                  <th class="p-2 text-left">Label Control</th>
+                  <th class="p-2 w-100 text-left">Control</th>
+                  <th class="p-2 w-30 text-left">Status</th>
+                  <!-- <th class="p-2 w-40 text-center">Aksi</th> -->
+                </tr>
+              </thead>
+
+              <tbody :class="[
+              'divide-y transition-colors',
+              theme === 'dark'
+                ? 'divide-gray-700 bg-slate-900'
+                : 'divide-gray-200 bg-white'
+            ]">
+                <tr :class="[
+                  'transition-colors',
+                    theme === 'dark'
+                      ? 'bg-slate-800 text-gray-100'
+                      : 'bg-gray-50 text-gray-900'
+                  ]"
+                  v-for="ctrl in module.controls"
+                  :key="`perm-${ctrl.id}`"
+                  class="border-t border-gray-700 cursor-pointer hover:bg-gray-700/40"
+                  @click="toggleRow(ctrl, module)"
+                >
+                  <td class="p-2" >
+                    <input
+                      type="checkbox"
+                      v-model="ctrl.checked"
+                      @change.stop="onControlCheck(module)"
+                      @click.stop
+                      class="accent-indigo-600"
+                    />
+                  </td>
+
+                  <td class="p-2 capitalize">
+                    {{ ctrl.label_control }}
+                  </td>
+                  <td class="p-2">
+                    {{ ctrl.control_name }}
+                  </td>
+
+                  <!-- STATUS -->
+                  <td class="p-2">
+                    <span
+                      :class="{
+                        'text-green-400 font-semibold': ctrl.id_status == 1,
+                        'text-red-400 font-semibold': ctrl.id_status != 1
+                      }"
+                    >
+                      {{ ctrl.id_status == 0 ? 'Tidak Aktif' : 'Aktif' }}
+                    </span>
+                  </td>
+
+                  <!-- AKSI TOGGLE STATUS -->
+                  <!-- <td class="p-2 text-center flex gap-2 justify-center">
+                    <button
+                      @click.stop="toggleStatus(ctrl)"
+                      class="px-3 py-1 rounded text-white text-xs"
+                      :class="ctrl.id_status == 1 ? 'bg-yellow-600' : 'bg-blue-600'"
+                    >
+                      {{ ctrl.id_status == 1 ? 'Nonaktifkan' : 'Aktifkan' }}
+                    </button>
+                    <button
+                      @click.stop="deletePermission(ctrl, module)"
+                      class="px-3 py-1 bg-red-600 text-white text-xs rounded"
+                    >
+                      Hapus
+                    </button>
+                  </td> -->
+
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
+        <!-- End scrollable wrapper -->
 
       </template>
 
@@ -368,11 +379,12 @@
       </template>
     </ModalWide>
 
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted, reactive } from "vue";
+import { ref, computed, onMounted, reactive, nextTick, watch } from "vue";
 import DataTable from "../components/DataTable.vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
@@ -559,6 +571,25 @@ const groupedPermissions = ref([]);
 const moduleList = ref([]);
 const controlsList = ref([]);
 
+const closePermissionModal = () => {
+  showPermissionModal.value = false;
+
+  // Reset form dan checkbox
+  formPermission.module_id = "";
+  formPermission.control_id = [];
+  groupedPermissions.value.forEach(m => {
+    m.controls.forEach(c => (c.checked = false));
+  });
+};
+
+
+watch(showPermissionModal, (newVal) => {
+  if (!newVal) {
+    formPermission.module_id = "";
+    formPermission.control_id = [];
+  }
+});
+
 onMounted(() => {
   loadModules();
   loadControls();
@@ -625,18 +656,41 @@ const openDetailPermission = async (row) => {
 //   SIMPAN PERMISSION BARU
 // ================================
 const savePermission = async () => {
-  await api.post("/roles/permission", {
-    roles_id: selectedRoleId.value,
-    module_id: formPermission.module_id,
-    control_id: formPermission.control_id,
-    id_status: 1
-  });
+  try {
+    // Ambil hanya id dari objek control
+    const controlIds = formPermission.control_id.map(c => c.id);
 
-  await loadPermission(); // Refresh tabel setelah tambah
+    const response = await api.post("/roles/permission", {
+      roles_id: selectedRoleId.value,
+      module_id: formPermission.module_id,
+      control_id: controlIds, // kirim array of id
+      id_status: 1
+    });
+
+    const message = response.data?.message || "Permission berhasil disimpan";
+
+    await loadPermission(); // Refresh tabel setelah tambah
+
+    // Optional: reset form jika ada control baru yang disimpan
+    if (controlIds.length > 0) {
+      formPermission.control_id = [];
+      formPermission.module_id = "";
+    }
+
+    Swal.fire("Info", message, "success");
+
+  } catch (error) {
+    console.error(error);
+
+    const message =
+      error.response?.data?.message || "Gagal menyimpan permission";
+
+    Swal.fire("Gagal", message, "error");
+  }
 };
 
 // ================================
-//   TOGGLE STATUS CONTROL (FINAL)
+//   TOGGLE STATUS CONTROL (FINAL), TOMBOL UBAH STATUS PER RECORD DATA PADA TABEL
 // ================================
 const toggleStatus = async (ctrl) => {
   try {
@@ -652,7 +706,7 @@ const toggleStatus = async (ctrl) => {
 };
 
 // ================================
-//   DELETE PERMISSION
+//   DELETE PERMISSION, DIPAKAI JIKA MEMBUTUHKAN DELETE PER RECORD DATA PADA TABEL
 // ================================
 const deletePermission = async (ctrl, module) => {
   await api.delete(`/roles/permission/${ctrl.id}`);
@@ -722,6 +776,25 @@ const toggleCheckAll = (module) => {
 };
 
 const onControlCheck = () => {};
-
-
 </script>
+
+<style>
+.multiselect {
+  width: 100%;
+}
+
+/* Biar placeholder di tengah secara vertikal */
+.multiselect__placeholder {
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+/* Samakan tinggi input dengan select native */
+.multiselect__tags {
+  min-height: 30px; /* sesuaikan dengan py-3 pada select */
+  display: flex;
+  align-items: center;
+  padding: 2px 12px;
+}
+</style>
