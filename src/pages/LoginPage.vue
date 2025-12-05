@@ -7,15 +7,27 @@
     </div>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+      <!-- GLOBAL MAINTENANCE ALERT -->
+      <transition name="fade">
+        <div
+          v-if="maintenance"
+          class="mb-4 rounded-lg bg-yellow-50 border border-yellow-400 text-yellow-800 p-3 text-center font-semibold"
+        >
+          ⚠ Sistem Maintenance  
+          <div class="text-sm font-normal mt-1">{{ maintenanceMessage }}</div>
+        </div>
+      </transition>
+
       <div class="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 relative">
         <!-- API Status Indicator -->
         <div class="absolute top-3 right-3 group">
           <div
             class="w-4 h-4 rounded-full shadow-md neon-glow transition-all"
             :class="{
-              'bg-green-500 neon-green': apiConnected && !apiSlow,
-              'bg-yellow-400 neon-yellow': apiConnected && apiSlow,
-              'bg-red-500 neon-red': !apiConnected
+              'neon-purple bg-purple-500': maintenance,                        // 🟣 MAINTENANCE
+              'bg-green-500 neon-green': apiConnected && !apiSlow && !maintenance,
+              'bg-yellow-400 neon-yellow': apiConnected && apiSlow && !maintenance,
+              'bg-red-500 neon-red': !apiConnected && !maintenance
             }"
           ></div>
 
@@ -23,12 +35,15 @@
           <div
             class="absolute right-0 mt-1 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap"
           >
-            <span v-if="!apiConnected">❌ Disconnected</span>
+            <!-- Saat Maintenance -->
+            <span v-if="maintenance">🟣 Maintenance Mode</span>
+
+            <!-- Normal States -->
+            <span v-else-if="!apiConnected">❌ Disconnected</span>
             <span v-else-if="apiSlow">⚠ Connection Slow ({{ pingTime }} ms)</span>
             <span v-else>✅ Connected ({{ pingTime }} ms)</span>
           </div>
         </div>
-
 
         <!-- Error Alert + Countdown -->
         <transition name="fade">
@@ -122,6 +137,8 @@
 import { ref, watch, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+const maintenance = ref(false);
+const maintenanceMessage = ref("");
 
 const email = ref("");
 const password = ref("");
@@ -160,36 +177,49 @@ const checkApiConnection = async () => {
   const start = performance.now();
 
   try {
+    // =======================
+    // 1️⃣ PING API
+    // =======================
     const res = await fetch(import.meta.env.VITE_API_URL + "/ping");
-
     const end = performance.now();
+
     pingTime.value = Math.round(end - start);
-
     apiConnected.value = res.ok;
-
-    // Slow jika > 300 ms
     apiSlow.value = apiConnected.value && pingTime.value > 300;
 
-    // adaptive timer
+    // adaptive interval
     if (!apiConnected.value) {
-      pingInterval = 2000; // cepat kalau error
+      pingInterval = 2000; 
     } else if (apiSlow.value) {
-      pingInterval = 4000; // slow, cek lebih sering
+      pingInterval = 4000;
     } else {
-      pingInterval = 8000; // stabil → cek jarang
+      pingInterval = 8000;
     }
+
+    // =======================
+    // 2️⃣ GET MAINTENANCE STATUS (digabung)
+    // =======================
+    const maintenanceRes = await fetch(import.meta.env.VITE_API_URL + "/system/mode");
+    const maintenanceData = await maintenanceRes.json();
+
+    maintenance.value = maintenanceData.mode === "maintenance";
+    maintenanceMessage.value =
+      maintenanceData.message || "Aplikasi sedang dalam mode perawatan";
 
   } catch (e) {
     apiConnected.value = false;
     apiSlow.value = false;
     pingTime.value = 0;
-    pingInterval = 2000; // koneksi buruk → periksa cepat
+    pingInterval = 2000;
+
+    console.warn("Polling error:", e);
   }
 
   // restart interval
   clearTimeout(timer);
   timer = setTimeout(checkApiConnection, pingInterval);
 };
+
 
 // Bagian alert time salah password
 const formatTime = (seconds) => {
@@ -420,6 +450,16 @@ const login = async () => {
   background: radial-gradient(circle at center, #ff5555, #a00000);
   box-shadow: 0 0 5px #ff4444, 0 0 10px #ff4444;
 }
+
+/* ===== Neon Purple (Maintenance Mode) ===== */
+.neon-purple {
+  background: radial-gradient(circle at center, #b566ff, #5c1fa3);
+  box-shadow: 
+    0 0 5px #c678ff,
+    0 0 10px #c678ff,
+    0 0 20px #9b4dff;
+}
+
 
 </style>
 

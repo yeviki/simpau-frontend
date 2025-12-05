@@ -1,3 +1,4 @@
+<!-- pages/DasboardHome.vue -->
 <template>
   <div>
     <h1
@@ -49,6 +50,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../api/axios";
+import Swal from "sweetalert2";
 
 const { theme } = defineProps({
   theme: String
@@ -62,8 +64,30 @@ const stats = ref({
 
 onMounted(async () => {
   try {
+
+    // ===============================================
+    // 1️⃣ CEK STATUS MAINTENANCE
+    // ===============================================
+    const maintenance = await api.get("/system/maintenance-status");
+
+    if (maintenance.data.status === 1) {
+
+      // Jika maintenance aktif → tampilkan alert
+      // (Tidak logout otomatis, hanya memberi tahu)
+      Swal.fire({
+        icon: "warning",
+        title: "Aplikasi Dalam Mode Maintenance",
+        text: "Beberapa fitur mungkin tidak dapat digunakan.",
+        confirmButtonColor: "#d33",
+      });
+    }
+
+    // ===============================================
+    // 2️⃣ AMBIL DATA STATS (LOGIKA ASLI)
+    // ===============================================
     const res = await api.get("/master/stats");
     stats.value = res.data;
+
   } catch (e) {
     console.error(e);
   }

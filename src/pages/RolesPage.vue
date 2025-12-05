@@ -46,6 +46,7 @@
               type="checkbox"
               class="absolute inset-0 appearance-none"
               v-model="maintenanceMode"
+              @change="toggleMaintenance"
             />
           </div>
         </label>
@@ -832,17 +833,15 @@ const onControlCheck = () => {};
 // ================================================================================================ //
 
 // =============================================== //
-//   SETTING TOMBOL MAINTANCE
+//   SETTING TOMBOL MAINTENANCE
 // =============================================== //
-// 🔧 State Maintenance Mode
 const maintenanceMode = ref(false);
 
-// Saat halaman dibuka → ambil status dari backend
+// Load status ketika halaman dibuka
 onMounted(() => {
   loadMaintenanceStatus();
 });
 
-// Ambil status dari backend
 const loadMaintenanceStatus = async () => {
   try {
     const res = await api.get("/system/maintenance-status");
@@ -852,15 +851,14 @@ const loadMaintenanceStatus = async () => {
   }
 };
 
+// 🔥 Ketika toggle digerakkan
 const toggleMaintenance = async () => {
-  const newState = !maintenanceMode.value;
+  const newState = maintenanceMode.value; // true = ON, false = OFF
 
   try {
-    await api.post("/system/set-maintenance", {
-      status: newState ? 1 : 0
+    const result = await api.post("/system/set-maintenance", {
+      status: newState ? "maintenance" : "normal"
     });
-
-    maintenanceMode.value = newState;
 
     Swal.fire({
       icon: newState ? "warning" : "success",
@@ -873,13 +871,18 @@ const toggleMaintenance = async () => {
 
   } catch (err) {
     console.error(err);
+
     Swal.fire({
       icon: "error",
       title: "Gagal Mengubah Mode",
       text: "Terjadi kesalahan saat mengubah mode maintenance.",
     });
+
+    // Jika gagal → kembalikan ke posisi awal
+    maintenanceMode.value = !newState;
   }
 };
+
 </script>
 
 <style>

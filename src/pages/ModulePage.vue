@@ -177,6 +177,8 @@ import Dropdown from "../components/Dropdown.vue";
 
 const { theme } = defineProps({ theme: String });
 
+const showAccessModal = ref(false);
+
 // CRUD roles
 const {
   items, form, errors, showModal, isEdit,
