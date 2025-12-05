@@ -248,7 +248,7 @@ const {
 
   beforeDelete: async (id) => {
     const result = await Swal.fire({
-      title: "Hapus User?",
+      title: "Hapus Data?",
       text: "Data yang sudah dihapus tidak dapat dikembalikan.",
       icon: "warning",
       showCancelButton: true,

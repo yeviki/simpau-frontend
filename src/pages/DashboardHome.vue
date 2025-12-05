@@ -48,6 +48,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
+import api from "../api/axios";
 
 const { theme } = defineProps({
   theme: String
@@ -57,5 +58,14 @@ const stats = ref({
   users: 0,
   roles: 0,
   lastLogin: "-",
+});
+
+onMounted(async () => {
+  try {
+    const res = await api.get("/master/stats");
+    stats.value = res.data;
+  } catch (e) {
+    console.error(e);
+  }
 });
 </script>

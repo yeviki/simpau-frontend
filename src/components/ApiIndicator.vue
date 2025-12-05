@@ -31,7 +31,7 @@
 
       <!-- Status Bulat -->
       <div
-        class="relative w-13 h-4 rounded-full transition-all duration-300"
+        class="relative w-12 h-4 rounded-full transition-all duration-300"
         :class="[statusColor, neonGlow, isDisconnected ? 'shake' : '']"
         :title="tooltipText"
       >

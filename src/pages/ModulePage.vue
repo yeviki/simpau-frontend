@@ -199,11 +199,33 @@ const {
   afterSave: () => {
     Swal.fire({
       icon: "success",
-      title: isEdit.value ? "Module berhasil diupdate" : "Module berhasil ditambahkan",
+      title: isEdit.value ? "Data berhasil diupdate" : "Data berhasil ditambahkan",
       timer: 1500,
       showConfirmButton: false,
     });
-  }
+  },
+
+  beforeDelete: async (id) => {
+    const result = await Swal.fire({
+      title: "Hapus Data?",
+      text: "Data yang sudah dihapus tidak dapat dikembalikan.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, Hapus",
+      cancelButtonText: "Batal",
+    });
+
+    return result.isConfirmed;
+  },
+
+  afterDelete: () => {
+    Swal.fire({
+      icon: "success",
+      title: "Data berhasil dihapus",
+      timer: 1500,
+      showConfirmButton: false,
+    });
+  },
 });
 
 // SORT
