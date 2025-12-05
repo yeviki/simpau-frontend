@@ -5,13 +5,62 @@
     <div class="flex justify-between mb-4 items-center">
       <h1 class="text-3xl font-bold">Roles Management</h1>
 
-      <button
-        @click="openAdd"
-        class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500"
-      >
-        Tambah Roles
-      </button>
+      <div class="flex items-center gap-4">
+
+        <!-- 🔥 Toggle Maintenance -->
+        <label class="relative inline-flex items-center cursor-pointer select-none">
+
+          <!-- Toggle background -->
+          <div
+            class="group relative inline-flex w-16 h-7 shrink-0 rounded-full p-0.5
+                  bg-gray-300 transition-all duration-300
+                  has-checked:bg-green-500"
+          >
+
+            <!-- Handle + Text -->
+            <span
+              class="absolute top-1/2 -translate-y-1/2 w-6 h-6 rounded-full bg-white shadow-md
+                    ring-1 ring-black/10 flex items-center justify-center text-[9px] font-bold
+                    transition-all duration-300 select-none
+                    group-has-checked:translate-x-9"
+            >
+              <!-- OFF text -->
+              <span
+                class="absolute transition-opacity duration-200
+                      group-has-checked:opacity-0"
+              >
+                OFF
+              </span>
+
+              <!-- ON text -->
+              <span
+                class="absolute opacity-0 text-green-600 transition-opacity duration-200
+                      group-has-checked:opacity-100"
+              >
+                ON
+              </span>
+            </span>
+
+            <!-- Checkbox -->
+            <input
+              type="checkbox"
+              class="absolute inset-0 appearance-none"
+              v-model="maintenanceMode"
+            />
+          </div>
+        </label>
+
+        <!-- Tombol Tambah -->
+        <button
+          @click="openAdd"
+          class="rounded-md bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-xs hover:bg-indigo-500"
+        >
+          Tambah Roles
+        </button>
+
+      </div>
     </div>
+
 
     <!-- DATATABLE -->
     <DataTable
@@ -776,6 +825,61 @@ const toggleCheckAll = (module) => {
 };
 
 const onControlCheck = () => {};
+
+
+// ================================================================================================ //
+// ================================================================================================ //
+// ================================================================================================ //
+
+// =============================================== //
+//   SETTING TOMBOL MAINTANCE
+// =============================================== //
+// 🔧 State Maintenance Mode
+const maintenanceMode = ref(false);
+
+// Saat halaman dibuka → ambil status dari backend
+onMounted(() => {
+  loadMaintenanceStatus();
+});
+
+// Ambil status dari backend
+const loadMaintenanceStatus = async () => {
+  try {
+    const res = await api.get("/system/maintenance-status");
+    maintenanceMode.value = res.data.status === 1;
+  } catch (err) {
+    console.error("Gagal mengambil status maintenance", err);
+  }
+};
+
+const toggleMaintenance = async () => {
+  const newState = !maintenanceMode.value;
+
+  try {
+    await api.post("/system/set-maintenance", {
+      status: newState ? 1 : 0
+    });
+
+    maintenanceMode.value = newState;
+
+    Swal.fire({
+      icon: newState ? "warning" : "success",
+      title: newState ? "Maintenance Diaktifkan" : "Aplikasi Normal",
+      text: newState
+        ? "Semua user akan logout & aplikasi hanya untuk admin."
+        : "Aplikasi kembali normal.",
+      confirmButtonColor: newState ? "#d33" : "#3085d6",
+    });
+
+  } catch (err) {
+    console.error(err);
+    Swal.fire({
+      icon: "error",
+      title: "Gagal Mengubah Mode",
+      text: "Terjadi kesalahan saat mengubah mode maintenance.",
+    });
+  }
+};
 </script>
 
 <style>
