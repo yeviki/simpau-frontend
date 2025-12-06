@@ -6,7 +6,52 @@
       <img class="mx-auto h-10 w-auto" src="../assets/logo_koe.png" alt="Your Company" />
       <h2 class="mt-1 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your account</h2>
     </div>
-    <!-- Error Alert + Countdown -->
+    
+    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
+      <!-- GLOBAL MAINTENANCE ALERT -->
+      <transition name="fade">
+        <div
+          v-if="maintenance"
+          class="mb-4 rounded-lg bg-yellow-50 border border-yellow-400 text-yellow-800 p-3 text-center font-semibold"
+        >
+          ⚠ Sistem Maintenance  
+          <div class="text-sm font-normal mt-1">{{ maintenanceMessage }}</div>
+        </div>
+      </transition>
+
+      <div class="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 relative">
+        <!-- ========================= -->
+        <!-- API STATUS INDICATOR FIX -->
+        <!-- ========================= -->
+        <div class="absolute top-3 right-3 group cursor-pointer">
+
+          <!-- BULATAN STATUS -->
+          <div
+            class="w-4 h-4 rounded-full shadow-md neon-glow transition-all"
+            :class="{
+              'api-purple': maintenance,
+              'api-green': apiConnected && !apiSlow && !maintenance,
+              'api-yellow': apiConnected && apiSlow && !maintenance,
+              'api-red': !apiConnected && !maintenance
+            }"
+          ></div>
+
+          <!-- TOOLTIP -->
+          <div
+            class="absolute right-0 mt-1 hidden group-hover:block bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-xl whitespace-nowrap z-50"
+          >
+            <!-- Saat Maintenance -->
+            <span v-if="maintenance">🟣 Maintenance Mode</span>
+
+            <!-- Normal State -->
+            <span v-else-if="!apiConnected">❌ Disconnected</span>
+            <span v-else-if="apiSlow">⚠ Slow ({{ pingTime }} ms)</span>
+            <span v-else>✅ Connected ({{ pingTime }} ms)</span>
+          </div>
+        </div>
+
+
+        <!-- Error Alert + Countdown -->
         <transition name="fade">
           <div v-if="error" class="mb-4 rounded-lg bg-red-50 border border-red-400 text-red-700 p-3 text-center animate-shake">
             <div class="font-medium">{{ error }}</div>
@@ -25,47 +70,6 @@
             </div>
           </div>
         </transition>
-
-    <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
-      <!-- GLOBAL MAINTENANCE ALERT -->
-      <transition name="fade">
-        <div
-          v-if="maintenance"
-          class="mb-4 rounded-lg bg-yellow-50 border border-yellow-400 text-yellow-800 p-3 text-center font-semibold"
-        >
-          ⚠ Sistem Maintenance  
-          <div class="text-sm font-normal mt-1">{{ maintenanceMessage }}</div>
-        </div>
-      </transition>
-
-      <div class="bg-white px-6 py-12 shadow-sm sm:rounded-lg sm:px-12 relative">
-        <!-- API Status Indicator -->
-        <div class="absolute top-3 right-3 group">
-          <div
-            class="w-4 h-4 rounded-full shadow-md neon-glow transition-all"
-            :class="{
-              'neon-purple bg-purple-500': maintenance,                        // 🟣 MAINTENANCE
-              'bg-green-500 neon-green': apiConnected && !apiSlow && !maintenance,
-              'bg-yellow-400 neon-yellow': apiConnected && apiSlow && !maintenance,
-              'bg-red-500 neon-red': !apiConnected && !maintenance
-            }"
-          ></div>
-
-          <!-- Tooltip -->
-          <div
-            class="absolute right-0 mt-1 hidden group-hover:block bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap"
-          >
-            <!-- Saat Maintenance -->
-            <span v-if="maintenance">🟣 Maintenance Mode</span>
-
-            <!-- Normal States -->
-            <span v-else-if="!apiConnected">❌ Disconnected</span>
-            <span v-else-if="apiSlow">⚠ Connection Slow ({{ pingTime }} ms)</span>
-            <span v-else>✅ Connected ({{ pingTime }} ms)</span>
-          </div>
-        </div>
-
-        
 
         <!-- Form -->
         <div class="space-y-6">
@@ -175,6 +179,8 @@
 import { ref, watch, computed, onMounted } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../stores/auth";
+import api from "../api/axios";
+
 const maintenance = ref(false);
 const maintenanceMessage = ref("");
 
@@ -215,29 +221,31 @@ const checkApiConnection = async () => {
   const start = performance.now();
 
   try {
-    // =======================
+    // ================
     // 1️⃣ PING API
-    // =======================
-    const res = await fetch(import.meta.env.VITE_API_URL + "/ping");
+    // ================
+    const res = await api.get(import.meta.env.VITE_API_URL + "/ping");
     const end = performance.now();
 
     pingTime.value = Math.round(end - start);
-    apiConnected.value = res.ok;
+    apiConnected.value = res.status === 200;
     apiSlow.value = apiConnected.value && pingTime.value > 300;
 
     // adaptive interval
     if (!apiConnected.value) {
-      pingInterval = 2000; 
+      pingInterval = 2000;     // cepat retry
     } else if (apiSlow.value) {
-      pingInterval = 4000;
+      pingInterval = 4000;     // agak lambat
     } else {
-      pingInterval = 8000;
+      pingInterval = 8000;     // normal
     }
 
-    // =======================
-    // 2️⃣ GET MAINTENANCE STATUS (digabung)
-    // =======================
-    const maintenanceRes = await fetch(import.meta.env.VITE_API_URL + "/system/mode");
+    // =========================
+    // 2️⃣ GET MAINTENANCE STATUS
+    // =========================
+    const maintenanceRes = await fetch(
+      import.meta.env.VITE_API_URL + "/system/mode"
+    );
     const maintenanceData = await maintenanceRes.json();
 
     maintenance.value = maintenanceData.mode === "maintenance";
@@ -245,19 +253,19 @@ const checkApiConnection = async () => {
       maintenanceData.message || "Aplikasi sedang dalam mode perawatan";
 
   } catch (e) {
+    // jika error = API OFF
     apiConnected.value = false;
     apiSlow.value = false;
     pingTime.value = 0;
     pingInterval = 2000;
 
-    console.warn("Polling error:", e);
+    console.warn("Polling error:", e.message);
   }
 
   // restart interval
   clearTimeout(timer);
   timer = setTimeout(checkApiConnection, pingInterval);
 };
-
 
 // Bagian alert time salah password
 const formatTime = (seconds) => {
@@ -514,50 +522,43 @@ const confirmRole = async () => {
 /* ==== Indikator Shimmer Pulse ==== */
 /* ===== Neon Glow Animation ===== */
 
+/* ============================
+   API INDICATOR (FULL VERSION)
+   ============================ */
+
+/* Pulse Glow Animation */
 @keyframes neonPulse {
-  0% {
-    transform: scale(0.9);
-    filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
-  }
-  50% {
-    transform: scale(1.05);
-    filter: drop-shadow(0 0 12px rgba(255,255,255,0.8));
-  }
-  100% {
-    transform: scale(0.9);
-    filter: drop-shadow(0 0 4px rgba(255,255,255,0.4));
-  }
+  0%   { transform: scale(0.92); filter: drop-shadow(0 0 3px rgba(255,255,255,0.4)); }
+  50%  { transform: scale(1.08); filter: drop-shadow(0 0 10px rgba(255,255,255,0.8)); }
+  100% { transform: scale(0.92); filter: drop-shadow(0 0 3px rgba(255,255,255,0.4)); }
 }
 
 .neon-glow {
-  animation: neonPulse 1.5s infinite ease-in-out;
+  animation: neonPulse 1.6s infinite ease-in-out;
 }
 
-/* ===== Color Modes (Gradient Glow) ===== */
+/* ===== COLOR STATES ===== */
 
-.neon-green {
-  background: radial-gradient(circle at center, #22ff55, #0fa030);
-  box-shadow: 0 0 5px #00ff66, 0 0 10px #00ff66;
+.api-green {
+  background: radial-gradient(circle at center, #4dfd7d, #009944);
+  box-shadow: 0 0 3px #00ff66, 0 0 8px #00ff66;
 }
 
-.neon-yellow {
-  background: radial-gradient(circle at center, #ffee55, #d1a800);
-  box-shadow: 0 0 5px #ffdd33, 0 0 10px #ffdd33;
+.api-yellow {
+  background: radial-gradient(circle at center, #ffe97a, #d1a300);
+  box-shadow: 0 0 3px #facc15, 0 0 8px #facc15;
 }
 
-.neon-red {
-  background: radial-gradient(circle at center, #ff5555, #a00000);
-  box-shadow: 0 0 5px #ff4444, 0 0 10px #ff4444;
+.api-red {
+  background: radial-gradient(circle at center, #ff7a7a, #cc0000);
+  box-shadow: 0 0 3px #ff4b4b, 0 0 8px #ff4b4b;
 }
 
-/* ===== Neon Purple (Maintenance Mode) ===== */
-.neon-purple {
-  background: radial-gradient(circle at center, #b566ff, #5c1fa3);
-  box-shadow: 
-    0 0 5px #c678ff,
-    0 0 10px #c678ff,
-    0 0 20px #9b4dff;
+.api-purple {
+  background: radial-gradient(circle at center, #c07aff, #6a00d1);
+  box-shadow: 0 0 3px #ba55ff, 0 0 8px #ba55ff;
 }
+
 
 
 </style>
