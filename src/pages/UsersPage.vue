@@ -127,7 +127,14 @@
         </div>
 
         <!-- ROLE -->
-        <div>
+         <Dropdown
+          v-model="form.roles_id"
+          label="Pilih Roles Akses"
+          url="/master/combo-roles"
+          label-field="roles_name"
+          value-field="id"
+        />
+        <!-- <div>
           <label class="text-sm text-gray-200">Role</label>
           <select
             v-model="form.roles_id"
@@ -138,7 +145,7 @@
             <option value="3">Pimpinan</option>
             <option value="4">Pimpinan</option>
           </select>
-        </div>
+        </div> -->
 
         <!-- BLOKIR -->
         <div>
@@ -183,6 +190,7 @@ import DataTable from "../components/DataTable.vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
 import { useCrud } from "../composables/useCrud";
+import Dropdown from "../components/Dropdown.vue";
 
 const { theme } = defineProps({
   theme: String
@@ -209,7 +217,7 @@ const {
     username: "",
     email: "",
     password: "",
-    roles_id: "2",
+    roles_id: "",
     blokir: "Tidak",
     id_status: "Aktif",
   },

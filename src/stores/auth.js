@@ -32,16 +32,53 @@ export const useAuthStore = defineStore("auth", {
 
   actions: {
     // ===================================
-    // LOGIN
+    // LOGIN (MODIFIED for MULTI ROLES)
     // ===================================
     async login(payload) {
       const res = await api.post("/auth/login", payload);
 
+      // Jika user memiliki banyak role:
+      // backend TIDAK mengirim token final
+      // tetapi mengirim:
+      //    needSelectRole: true
+      //    roles: [...]
+      //    tempToken: "xxxx"
+      if (res.data.needSelectRole) {
+        return res.data; // <== LoginPage.vue yg handle modal role
+      }
+
+      // Jika user hanya punya 1 role → sama seperti sebelumnya
       this.token = res.data.token;
       localStorage.setItem("token", this.token);
 
       await this.fetchProfile();
       await this.loadMenu();
+
+      return res.data;
+    },
+
+    // ===================================
+    // SET TOKEN (BARU, dipakai setelah pilih role)
+    // ===================================
+    setToken(token) {
+      this.token = token;
+      localStorage.setItem("token", token);
+    },
+
+    // ===================================
+    // SELECT ROLE (BARU)
+    // ===================================
+    async selectRole(payload) {
+      const res = await api.post("/auth/select-role", payload);
+
+      // Simpan token final setelah role dipilih
+      this.setToken(res.data.token);
+
+      // Setelah token valid → ambil profile & menu
+      await this.fetchProfile();
+      await this.loadMenu();
+
+      return res.data;
     },
 
     // ===================================

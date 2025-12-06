@@ -37,7 +37,7 @@ const props = defineProps({
 
   placeholder: {
     type: String,
-    default: "-- Pilih --",
+    default: "-- Pilih Data --",
   },
 
   // opsional, jika data dari API

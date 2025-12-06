@@ -1,3 +1,4 @@
+<!-- pages/LoginPage.vue -->
 <template>
   <div class="flex min-h-full flex-1 flex-col justify-center py-12 sm:px-6 lg:px-8">
     <!-- Logo + Title -->
@@ -5,6 +6,25 @@
       <img class="mx-auto h-10 w-auto" src="../assets/logo_koe.png" alt="Your Company" />
       <h2 class="mt-1 text-center text-2xl/9 font-bold tracking-tight text-gray-900">Sign in to your account</h2>
     </div>
+    <!-- Error Alert + Countdown -->
+        <transition name="fade">
+          <div v-if="error" class="mb-4 rounded-lg bg-red-50 border border-red-400 text-red-700 p-3 text-center animate-shake">
+            <div class="font-medium">{{ error }}</div>
+
+            <div v-if="countdown > 0" class="mt-2">
+              <div class="flex justify-between mb-1 text-sm font-mono text-gray-700">
+                <span>⏳ Waktu tersisa:</span>
+                <span>{{ formatTime(countdown) }}</span>
+              </div>
+              <div class="w-full h-3 rounded-full overflow-hidden bg-gray-200 relative">
+                <div
+                  class="h-3 rounded-full absolute top-0 left-0 shimmer"
+                  :style="{ width: progressBarWidth + '%', backgroundColor: progressBarColor }"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </transition>
 
     <div class="mt-10 sm:mx-auto sm:w-full sm:max-w-[480px]">
       <!-- GLOBAL MAINTENANCE ALERT -->
@@ -45,25 +65,7 @@
           </div>
         </div>
 
-        <!-- Error Alert + Countdown -->
-        <transition name="fade">
-          <div v-if="error" class="mb-4 rounded-lg bg-red-50 border border-red-400 text-red-700 p-3 text-center animate-shake">
-            <div class="font-medium">{{ error }}</div>
-
-            <div v-if="countdown > 0" class="mt-2">
-              <div class="flex justify-between mb-1 text-sm font-mono text-gray-700">
-                <span>⏳ Waktu tersisa:</span>
-                <span>{{ formatTime(countdown) }}</span>
-              </div>
-              <div class="w-full h-3 rounded-full overflow-hidden bg-gray-200 relative">
-                <div
-                  class="h-3 rounded-full absolute top-0 left-0 shimmer"
-                  :style="{ width: progressBarWidth + '%', backgroundColor: progressBarColor }"
-                ></div>
-              </div>
-            </div>
-          </div>
-        </transition>
+        
 
         <!-- Form -->
         <div class="space-y-6">
@@ -131,6 +133,42 @@
       Loading...
     </div>
   </div>
+
+  <!-- ========================= -->
+  <!-- MODAL PILIH ROLE (BARU) -->
+  <!-- ========================= -->
+  <div
+    v-if="showRoleModal"
+    class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
+  >
+    <div class="bg-white rounded-lg shadow-lg p-6 w-[380px]">
+      <h2 class="text-lg font-bold text-gray-800 mb-4 text-center">
+        Pilih Role untuk Login
+      </h2>
+
+      <div class="space-y-3 max-h-[260px] overflow-y-auto">
+        <div
+          v-for="r in roles"
+          :key="r.id"
+          @click="selectedRole = r"
+          class="p-3 border rounded-lg cursor-pointer transition"
+          :class="selectedRole?.roles_id === r.roles_id ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-gray-50 hover:bg-gray-100'"
+        >
+          {{ r.roles_name }}
+        </div>
+      </div>
+
+      <button
+        @click="confirmRole"
+        :disabled="!selectedRole"
+        class="w-full mt-4 py-2 rounded-md font-semibold text-white shadow-sm transition"
+        :class="selectedRole ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-gray-400 cursor-not-allowed'"
+      >
+        Pilih Role & Lanjut Login
+      </button>
+    </div>
+  </div>
+
 </template>
 
 <script setup>
@@ -373,9 +411,33 @@ const login = async () => {
   setError(""); // clear previous error
 
   try {
+    // PENTING: auth.login kemungkinan mengembalikan axios response
     const res = await auth.login({ email: email.value, password: password.value });
+
+    // normalisasi response: kalau axios -> res.data, kalau store sudah unwrap -> res
+    const data = res?.data ?? res;
+
+    // Hapus block jika login sukses (backend mengirim success)
     removeBlocked(email.value);
-    // navigate on success
+
+    // ================
+    // CEK MULTI ROLE
+    // ================
+    if (data?.needSelectRole) {
+      roles.value = data.roles || [];        // pastikan roles array
+      userId = data.user?.id ?? null;        // simpan user id dari payload
+      showRoleModal.value = true;
+      loading.value = false;
+      return;
+    }
+
+    // jika hanya satu role → login langsung, backend mengirim token + user
+    if (data?.token) {
+      auth.setToken(data.token); // asumsi store menerima token set
+      // optionally set user info in store here
+    }
+
+    // jika hanya satu role → langsung login
     router.push("/dashboard");
   } catch (err) {
     // selalu gunakan setError sehingga timeout lama tidak menghapus pesan baru
@@ -391,6 +453,43 @@ const login = async () => {
     } else {
       setError("Login gagal, silakan coba lagi!");
     }
+  } finally {
+    loading.value = false;
+  }
+};
+
+// ===========================
+// Multi Roles Login (BARU)
+// ===========================
+const showRoleModal = ref(false);
+const roles = ref([]);
+const selectedRole = ref(null);
+let userId = null;
+
+const confirmRole = async () => {
+  if (!selectedRole.value) return;
+
+  loading.value = true;
+  try {
+    const res = await auth.selectRole({
+      user_id: userId,
+      roles_id: selectedRole.value.roles_id,
+    });
+
+    const data = res?.data ?? res;
+
+    if (!data || !data.token) {
+      throw new Error("Token final tidak diterima dari server");
+    }
+
+    // simpan token final
+    auth.setToken(data.token);
+
+    // tutup modal & lanjut
+    showRoleModal.value = false;
+    router.push("/dashboard");
+  } catch (e) {
+    setError("Gagal memilih role, coba lagi");
   } finally {
     loading.value = false;
   }
