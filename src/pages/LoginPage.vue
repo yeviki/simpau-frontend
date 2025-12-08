@@ -486,6 +486,20 @@ const confirmRole = async () => {
 
     const data = res?.data ?? res;
 
+    // =============================
+    // CEK TIDAK ADA ROLE AKTIF
+    // =============================
+    if (data?.noActiveRole) {
+      Swal.fire({
+        icon: "warning",
+        title: "Akses Ditolak",
+        text: data.message || "Tidak ada izin aktif untuk akun Anda"
+      });
+
+      loading.value = false;
+      return; // stop flow, jangan lanjut ke dashboard
+    }
+
     if (!data || !data.token) {
       throw new Error("Token final tidak diterima dari server");
     }

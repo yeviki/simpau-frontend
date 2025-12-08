@@ -1,27 +1,28 @@
-<!-- components/Select2.vue -->
 <template>
   <div>
-    <!-- Label -->
     <label v-if="label" class="text-sm text-gray-200 mb-1 block">
       {{ label }}
     </label>
 
-    <!-- Native Select -->
-    <select
-      class="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300"
-      :value="modelValue"
-      @change="$emit('update:modelValue', $event.target.value)"
-    >
-      <option value="">{{ placeholder }}</option>
-
-      <option
+    <div class="space-y-2">
+      <label
         v-for="item in options"
         :key="item[valueField]"
-        :value="item[valueField]"
+        class="flex items-center gap-2 cursor-pointer"
       >
-        {{ item[labelField] }}
-      </option>
-    </select>
+        <input
+          type="radio"
+          class="w-4 h-4 accent-indigo-600"
+          :name="name"
+          :value="item[valueField]"
+          :checked="modelValue == item[valueField]"
+          @change="select(item[valueField])"
+        />
+        <span class="text-sm text-gray-200">
+          {{ item[labelField] }}
+        </span>
+      </label>
+    </div>
   </div>
 </template>
 
@@ -29,7 +30,6 @@
 import { ref, onMounted } from "vue";
 import api from "../api/axios";
 
-// Props
 const props = defineProps({
   modelValue: [String, Number],
 
@@ -38,9 +38,9 @@ const props = defineProps({
     default: "",
   },
 
-  placeholder: {
+  name: {
     type: String,
-    default: "-- Pilih --",
+    default: "radio-group",
   },
 
   url: {
@@ -64,9 +64,9 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(["update:modelValue"]);
 const options = ref([]);
 
-// Load data dari API atau static items
 const load = async () => {
   try {
     if (props.url) {
@@ -76,8 +76,12 @@ const load = async () => {
       options.value = props.items;
     }
   } catch (error) {
-    console.error("Dropdown Load Error:", error);
+    console.error("RadioGroup Load Error:", error);
   }
+};
+
+const select = (value) => {
+  emit("update:modelValue", value);
 };
 
 onMounted(load);

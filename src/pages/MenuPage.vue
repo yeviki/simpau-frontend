@@ -21,7 +21,7 @@
       <input
         v-model="query.search"
         placeholder="Cari..."
-        class="block rounded-full px-3 py-1 text-sm border transition-colors duration-300"
+        class="block rounded-full px-3 py-1 text-xs border transition-colors duration-300"
         :class="theme === 'dark'
           ? 'bg-gray-800 text-gray-200 border-gray-700'
           : 'bg-white text-gray-900 border-gray-300'"
@@ -29,7 +29,7 @@
 
       <select
         v-model="sortBy"
-        class="rounded-full px-2 py-1 border transition-colors duration-300"
+        class="rounded-full px-2 py-1 border text-xs transition-colors duration-300"
         :class="theme === 'dark'
           ? 'bg-gray-800 text-gray-200 border-gray-700'
           : 'bg-white text-gray-900 border-gray-300'"
@@ -41,7 +41,7 @@
 
       <select
         v-model="sortDir"
-        class="rounded-full px-2 py-1 border transition-colors"
+        class="rounded-full px-2 py-1 text-xs border transition-colors"
         :class="theme === 'dark'
           ? 'bg-gray-800 text-gray-200 border-gray-700'
           : 'bg-white text-gray-900 border-gray-300'"

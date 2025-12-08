@@ -120,6 +120,10 @@ export function useCrud(endpoint, options = {}) {
     // 🔥 WAJIB: Pastikan password kosong saat edit
     form.password = "";
 
+    if (typeof form.roles_id === "string") {
+      form.roles_id = form.roles_id.split(",").map(x => parseInt(x));
+    }
+
     showModal.value = true;
   };
 

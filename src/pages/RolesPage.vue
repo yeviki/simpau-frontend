@@ -836,6 +836,7 @@ const onControlCheck = () => {};
 //   SETTING TOMBOL MAINTENANCE
 // =============================================== //
 const maintenanceMode = ref(false);
+const maintenanceMessage = ref(""); // 🔥 pesan maintenance
 
 // Load status ketika halaman dibuka
 onMounted(() => {
@@ -845,7 +846,9 @@ onMounted(() => {
 const loadMaintenanceStatus = async () => {
   try {
     const res = await api.get("/system/maintenance-status");
+
     maintenanceMode.value = res.data.status === 1;
+    maintenanceMessage.value = res.data.message || ""; // 🔥 ambil message
   } catch (err) {
     console.error("Gagal mengambil status maintenance", err);
   }
@@ -853,18 +856,45 @@ const loadMaintenanceStatus = async () => {
 
 // 🔥 Ketika toggle digerakkan
 const toggleMaintenance = async () => {
-  const newState = maintenanceMode.value; // true = ON, false = OFF
+  const newState = maintenanceMode.value;
 
+  // 🔥 Jika toggle dinyalakan → tampilkan modal input message
+  if (newState) {
+    const { value: text } = await Swal.fire({
+      title: "Pesan Maintenance",
+      input: "textarea",
+      inputLabel: "Pesan yang ditampilkan ke user",
+      inputPlaceholder: "Contoh: Sistem sedang maintenance sampai pukul 22:00",
+      inputValue: maintenanceMessage.value, // 🔥 isi otomatis jika sudah ada
+      showCancelButton: true,
+      confirmButtonText: "Simpan & Aktifkan",
+      cancelButtonText: "Batal",
+      inputAttributes: {
+        "aria-label": "Pesan Maintenance"
+      }
+    });
+
+    // 🔴 Jika user klik batal → kembalikan toggle ke OFF
+    if (text === undefined) {
+      maintenanceMode.value = false;
+      return;
+    }
+
+    maintenanceMessage.value = text;
+  }
+
+  // ✅ kirim ke API
   try {
-    const result = await api.post("/system/set-maintenance", {
-      status: newState ? "maintenance" : "normal"
+    await api.post("/system/set-maintenance", {
+      status: newState ? "maintenance" : "normal",
+      message: maintenanceMessage.value
     });
 
     Swal.fire({
       icon: newState ? "warning" : "success",
       title: newState ? "Maintenance Diaktifkan" : "Aplikasi Normal",
       text: newState
-        ? "Semua user akan logout & aplikasi hanya untuk admin."
+        ? "Mode maintenance aktif."
         : "Aplikasi kembali normal.",
       confirmButtonColor: newState ? "#d33" : "#3085d6",
     });
@@ -878,7 +908,6 @@ const toggleMaintenance = async () => {
       text: "Terjadi kesalahan saat mengubah mode maintenance.",
     });
 
-    // Jika gagal → kembalikan ke posisi awal
     maintenanceMode.value = !newState;
   }
 };

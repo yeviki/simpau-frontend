@@ -126,26 +126,13 @@
           </p>
         </div>
 
-        <!-- ROLE -->
-         <Dropdown
+        <CheckboxGroup
           v-model="form.roles_id"
-          label="Pilih Roles Akses"
+          label="Pilih Hak Akses"
           url="/master/combo-roles"
           label-field="roles_name"
           value-field="id"
         />
-        <!-- <div>
-          <label class="text-sm text-gray-200">Role</label>
-          <select
-            v-model="form.roles_id"
-            class="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300"
-          >
-            <option value="1">Admin Super</option>
-            <option value="2">Admin Local</option>
-            <option value="3">Pimpinan</option>
-            <option value="4">Pimpinan</option>
-          </select>
-        </div> -->
 
         <!-- BLOKIR -->
         <div>
@@ -190,7 +177,7 @@ import DataTable from "../components/DataTable.vue";
 import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
 import { useCrud } from "../composables/useCrud";
-import Dropdown from "../components/Dropdown.vue";
+import CheckboxGroup from "../components/CheckboxGroup.vue";
 
 const { theme } = defineProps({
   theme: String
@@ -217,9 +204,18 @@ const {
     username: "",
     email: "",
     password: "",
-    roles_id: "",
+    // roles_id: "", //jika menggunakan combobox dropdown biasa
+    roles_id: [],   // ✅ harus array
     blokir: "Tidak",
     id_status: "Aktif",
+  },
+    mapResponse: (rows) => {
+    return rows.map((r) => ({
+      ...r,
+      roles_id: r.roles_ids 
+        ? r.roles_ids.split(",").map(x => parseInt(x))
+        : []
+    }));
   },
   rulesCreate: {
     username: ["required"],
@@ -235,6 +231,11 @@ const {
 
   transformForm: (f) => {
     const payload = { ...f };
+
+    // ✅ normalize roles_id ke array int
+    if (Array.isArray(payload.roles_id)) {
+      payload.roles_id = payload.roles_id.map(r => parseInt(r));
+    }
 
     // HANYA kirim password jika benar-benar diisi
     if (!payload.password || payload.password.trim() === "") {

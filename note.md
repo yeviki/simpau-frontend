@@ -80,15 +80,6 @@ Contoh untuk memilih banyak role:
   value-field="id"
 />
 
-<SearchableSelect
-  v-model="form.id_status"
-  label="Pilih User"
-  url="/master/combo-status"
-  label-field="status_name"
-  value-field="id"
-  placeholder="Cari user..."
-/>
-
 
 👍 Output form.role_ids akan menjadi:
 
@@ -104,3 +95,87 @@ Semua sudah:
 ✔ Dinamis dari API
 ✔ Bisa pakai array
 ✔ Reusable di semua module
+
+✅ Cara Pakai combobox multiselect
+import Multiselect from 'vue-multiselect'
+import 'vue-multiselect/dist/vue-multiselect.min.css'
+
+const controlsList = ref([]);
+<!-- Cara Panggil Datanya -->
+const loadControls = async () => {
+  const r = await api.get("/control");
+  controlsList.value = r.data; // pastikan format seperti API kamu
+};
+<!-- Set Bentuk Form -->
+const formPermission = reactive({
+  control_id: []   // array untuk multiselect
+});
+<label class="text-gray-300">Control</label>
+  <Multiselect
+    v-model="formPermission.control_id"
+    :options="controlsList"
+    :multiple="true"
+    :close-on-select="false"
+    :clear-on-select="false"
+    label="label_control"
+    track-by="id"
+    placeholder="-- Pilih Control --"
+    class="text-black"
+  />
+</div>
+
+✅ Cara Pakai combobox manual
+<div>
+  <label class="text-sm text-gray-200">Role</label>
+  <select
+    v-model="form.roles_id"
+    class="w-full px-3 py-2 rounded-lg bg-white text-black border border-gray-300"
+  >
+    <option value="1">Admin Super</option>
+    <option value="2">Admin Local</option>
+    <option value="3">Pimpinan</option>
+    <option value="4">Pimpinan</option>
+  </select>
+</div>
+
+✅ Cara pakai Dropdown
+import Dropdown from "../components/Dropdown.vue";
+<Dropdown
+  v-model="form.roles_id"
+  label="Pilih Roles Akses"
+  url="/master/combo-roles"
+  label-field="roles_name"
+  value-field="id"
+/>
+
+✅ Cara pakai CheckboxGroup
+import CheckboxGroup from "../components/CheckboxGroup.vue";
+<CheckboxGroup
+  v-model="form.permissions"
+  label="Pilih Hak Akses"
+  url="/master/combo-permissions"
+  label-field="permission_name"
+  value-field="id"
+/>
+
+✅ Cara pakai RadioGroup
+import RadioGroup from "../components/RadioGroup.vue";
+<RadioGroup
+  v-model="form.status"
+  label="Status User"
+  name="status_user"
+  url="/master/combo-status"
+  label-field="status_name"
+  value-field="id"
+/>
+
+✅ Cara pakai SearchLabelSelect
+import SearchableSelect from "../components/SearchableSelect.vue";
+<SearchableSelect
+  v-model="form.id_status"
+  label="Pilih User"
+  url="/master/combo-status"
+  label-field="status_name"
+  value-field="id"
+  placeholder="Cari user..."
+/>
