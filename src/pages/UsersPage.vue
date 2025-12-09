@@ -13,6 +13,12 @@
       </button>
     </div>
 
+    <div
+      v-if="appStore.maintenance"
+      class="bg-red-600 text-white p-3 rounded mb-3"
+    >
+      {{ appStore.maintenanceMessage }}
+    </div>
     <!-- DATATABLE -->
     <DataTable
       :theme="theme"
@@ -29,6 +35,17 @@
       @update:sortDir="sortDir = $event"
       v-model:perPage="perPage"
     >
+    <!-- Slot Roles -->
+    <!-- Slot Roles -->
+    <template #roles="{ row }">
+      <ul class="list-disc pl-5 space-y-1">
+        <li v-for="(role, i) in row.roles_name_list" :key="i">
+          {{ role }}
+        </li>
+      </ul>
+    </template>
+
+
       <!-- Slot Blokir -->
       <template #blokir="{ row }">
         <span
@@ -178,6 +195,9 @@ import Modal from "../components/Modal.vue";
 import Swal from "sweetalert2";
 import { useCrud } from "../composables/useCrud";
 import CheckboxGroup from "../components/CheckboxGroup.vue";
+import { useAuthStore } from "../stores/auth";
+
+const appStore = useAuthStore();
 
 const { theme } = defineProps({
   theme: String
@@ -212,8 +232,15 @@ const {
     mapResponse: (rows) => {
     return rows.map((r) => ({
       ...r,
-      roles_id: r.roles_ids 
+
+      // untuk FORM checkbox (ID)
+      roles_id: r.roles_ids
         ? r.roles_ids.split(",").map(x => parseInt(x))
+        : [],
+
+      // untuk TAMPILAN di tabel (Nama Role)
+      roles_name_list: r.roles_name
+        ? r.roles_name.split(",").map(x => x.trim())
         : []
     }));
   },
@@ -290,7 +317,7 @@ const columns = [
   { key: "fullname", label: "Nama Lengkap" },
   { key: "username", label: "Username" },
   { key: "email", label: "Email" },
-  { key: "roles_name", label: "Roles" },
+  { key: "roles_name_list", label: "Roles", slot: "roles" },
   { key: "blokir", label: "Blokir", slot: "blokir" },
   { key: "id_status", label: "Status", slot: "status" },
   { key: "actions", label: "Action", slot: "actions" },

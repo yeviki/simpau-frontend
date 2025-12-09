@@ -189,6 +189,18 @@ export function useCrud(endpoint, options = {}) {
         return false;
       }
 
+      // 🔥 Akses Ditolak (440)
+      if (e.response?.status === 440) {
+        Swal.fire({
+          icon: "error",
+          title: "Sistem Maintenance!",
+          text: e.response.data.message || "Akses ditutup untuk aksi ini",
+          confirmButtonColor: "#d33",
+        });
+        loading.value = false;
+        return false;
+      }
+
       // Backend kirim: { fields: { roles_name: "..."} }
       if (e.response?.data?.fields) {
         Object.assign(errors, e.response.data.fields);
@@ -227,6 +239,18 @@ export function useCrud(endpoint, options = {}) {
         Swal.fire({
           icon: "error",
           title: "Akses Ditolak!",
+          text: e.response.data.message || "Akses ditutup untuk aksi ini",
+          confirmButtonColor: "#d33",
+        });
+        loading.value = false;
+        return false;
+      }
+
+      // 🔥 Akses Ditolak (440)
+      if (e.response?.status === 440) {
+        Swal.fire({
+          icon: "error",
+          title: "Sistem Maintenance!",
           text: e.response.data.message || "Akses ditutup untuk aksi ini",
           confirmButtonColor: "#d33",
         });

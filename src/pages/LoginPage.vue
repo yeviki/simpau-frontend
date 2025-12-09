@@ -146,9 +146,13 @@
     class="fixed inset-0 bg-black/50 flex items-center justify-center z-50"
   >
     <div class="bg-white rounded-lg shadow-lg p-6 w-[380px]">
-      <h2 class="text-lg font-bold text-gray-800 mb-4 text-center">
-        Pilih Role untuk Login
-      </h2>
+      <!-- INFO MESSAGE -->
+      <div
+        v-if="roles.length > 1"
+        class="text-sm text-blue-700 bg-blue-50 border border-blue-200 rounded-md p-3 mb-4 text-center whitespace-pre-line"
+      >
+        {{ roleInfoMessage }}
+      </div>
 
       <div class="space-y-3 max-h-[260px] overflow-y-auto">
         <div
@@ -168,7 +172,7 @@
         class="w-full mt-4 py-2 rounded-md font-semibold text-white shadow-sm transition"
         :class="selectedRole ? 'bg-indigo-600 hover:bg-indigo-500' : 'bg-gray-400 cursor-not-allowed'"
       >
-        Pilih Role & Lanjut Login
+        Pilih Group & Lanjut Login
       </button>
     </div>
   </div>
@@ -221,51 +225,41 @@ const checkApiConnection = async () => {
   const start = performance.now();
 
   try {
-    // ================
-    // 1️⃣ PING API
-    // ================
-    const res = await api.get(import.meta.env.VITE_API_URL + "/ping");
+    // 1️⃣ ping
+    const pingRes = await api.get("/ping");
     const end = performance.now();
 
     pingTime.value = Math.round(end - start);
-    apiConnected.value = res.status === 200;
+    apiConnected.value = pingRes.status === 200;
     apiSlow.value = apiConnected.value && pingTime.value > 300;
 
-    // adaptive interval
-    if (!apiConnected.value) {
-      pingInterval = 2000;     // cepat retry
-    } else if (apiSlow.value) {
-      pingInterval = 4000;     // agak lambat
-    } else {
-      pingInterval = 8000;     // normal
-    }
+    // interval adaptif
+    pingInterval =
+      !apiConnected.value ? 2000 :
+      apiSlow.value ? 4000 :
+      8000;
 
-    // =========================
-    // 2️⃣ GET MAINTENANCE STATUS
-    // =========================
-    const maintenanceRes = await fetch(
-      import.meta.env.VITE_API_URL + "/system/mode"
-    );
-    const maintenanceData = await maintenanceRes.json();
+    // 2️⃣ maintenance status
+    const maintenanceRes = await api.get("/system/mode");
+    const maintenanceData = maintenanceRes.data;
 
     maintenance.value = maintenanceData.mode === "maintenance";
     maintenanceMessage.value =
-      maintenanceData.message || "Aplikasi sedang dalam mode perawatan";
+    maintenanceData.message || "Aplikasi sedang dalam mode perawatan";
 
   } catch (e) {
-    // jika error = API OFF
     apiConnected.value = false;
     apiSlow.value = false;
     pingTime.value = 0;
     pingInterval = 2000;
 
-    console.warn("Polling error:", e.message);
+    console.warn("Polling error:", e?.message || e);
   }
 
-  // restart interval
   clearTimeout(timer);
   timer = setTimeout(checkApiConnection, pingInterval);
 };
+
 
 // Bagian alert time salah password
 const formatTime = (seconds) => {
@@ -465,6 +459,17 @@ const login = async () => {
     loading.value = false;
   }
 };
+
+const roleInfoMessage = computed(() => {
+  const total = roles.value.length;
+
+  if (total > 1) {
+    return `Informasi!\nAnda memiliki ${total} group untuk bisa login, pilih salah satu untuk lanjut.`;
+  }
+
+  return "";
+});
+
 
 // ===========================
 // Multi Roles Login (BARU)
